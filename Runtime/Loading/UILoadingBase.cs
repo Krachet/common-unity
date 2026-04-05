@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using Com.Krackhet.Runtime.UI;
+
 #if CYSHARP_UNITASK
 using Cysharp.Threading.Tasks;
 #endif
@@ -9,7 +11,7 @@ using UnityEngine;
 namespace Com.Krackhet.Runtime.Loading
 {
 #if CYSHARP_UNITASK
-    public abstract class UILoadingBase :  UILayer
+    public abstract class UILoadingBase : UILayer
     {
         public float Process { get; private set; }
 
