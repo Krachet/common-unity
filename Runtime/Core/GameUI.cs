@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using Com.Krackhet.Runtime.Utilities;
+
 #if UNITY_EDITOR
 using System.IO;
 using UnityEditor;
@@ -38,7 +40,7 @@ public static class GameUI
         layers = new Dictionary<Type, UILayer>();
         popUpLayers = new Dictionary<Type, PopUpLayer>();
         groups = new Dictionary<int, Transform>();
-        UICanvas existCanvas = Object.FindFirstObjectByType<UICanvas>();
+        UICanvas existCanvas = Object.FindAnyObjectByType<UICanvas>();
         if (existCanvas != null) existCanvas.TryGetComponent(out canvas);
         else canvas = UICanvas.InstantiateUICanvas();
         eventSystem = EventSystem.current;
@@ -171,7 +173,7 @@ public static class GameUI
     {
         if (!groups.ContainsKey(order))
         {
-            GameObject group = new(Com.HorusGames.Utilities.GameHelper.CreateText("Group:[{0}]", order));
+            GameObject group = new(GameHelper.CreateText("Group:[{0}]", order));
             RectTransform rectTransform = group.TryAddComponent<RectTransform>();
             rectTransform.SetParent(canvas.transform, false);
             rectTransform.Reset();
@@ -198,7 +200,7 @@ public static class GameUI
         Texture2D prefabIcon = EditorGUIUtility.IconContent("Prefab Icon").image as Texture2D;
 
         ProjectWindowUtil.StartNameEditingIfProjectWindowExists(
-            0,
+            new EntityId(),
             ScriptableObject.CreateInstance<CreateUILayerPrefabAction>(),
             assetPath,
             prefabIcon,
@@ -276,9 +278,9 @@ public static class GameUI
         return rectTransform;
     }
 
-    private sealed class CreateUILayerPrefabAction : EndNameEditAction
+    private sealed class CreateUILayerPrefabAction : AssetCreationEndAction 
     {
-        public override void Action(int instanceId, string pathName, string resourceFile)
+        public override void Action(EntityId entityId, string pathName, string resourceFile)
         {
             CreateUILayerPrefabAtPath(pathName);
         }

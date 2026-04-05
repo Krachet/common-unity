@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+#if DOTWEEN
 using DG.Tweening;
+#endif
 using UnityEngine;
 
 public abstract class UILayer : MonoBehaviour
@@ -88,6 +90,7 @@ public abstract class UILayer : MonoBehaviour
     }
 
     #region Protected Methods
+#if DOTWEEN
     protected virtual Tween AnimateObjectsIn()
     {
         Sequence spawnSeq = DOTween.Sequence();
@@ -126,6 +129,7 @@ public abstract class UILayer : MonoBehaviour
     {
         return animatedObject.AnimateOut();
     }
+#endif
 
     protected virtual void HideAnimatedObjectsAtStart()
     {

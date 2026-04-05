@@ -1,6 +1,8 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
+using Com.Krackhet.Runtime.Utilities;
+
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -25,7 +27,7 @@ public class UICanvas : MonoBehaviour
         canvasScaler.referenceResolution = new Vector2(886, 1920);
         canvasScaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
         canvasScaler.matchWidthOrHeight = 0.5f;
-        if (FindFirstObjectByType<EventSystem>() == null)
+        if (FindAnyObjectByType<EventSystem>() == null)
         {
             GameObject eventSystem = new GameObject(typeof(EventSystem).Name);
             eventSystem.AddComponent<EventSystem>();
@@ -42,7 +44,7 @@ public class UICanvas : MonoBehaviour
         Camera camera = canvasObject.AddComponent<Camera>();
         camera.clearFlags = CameraClearFlags.Depth;
         camera.cullingMask = 0;
-        camera.SetCullingMask("UI", 1);
+        camera.SetCullingMask("UI", 6);
         camera.allowMSAA = false;
         camera.orthographic = true;
         camera.depth = mainCamera.depth + 1;

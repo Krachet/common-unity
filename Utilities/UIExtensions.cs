@@ -28,7 +28,7 @@ public static class UIExtensions
     private static IEnumerator CrossFadeRoutine(Graphic graphic, float delay, float fromAlpha, float toAlpha, float duration, AnimationCurve animationCurve, Action onFadeEnd)
     {
         graphic.canvasRenderer.SetAlpha(fromAlpha);
-        if (delay > 0) yield return Com.HorusGames.Utilities.GameHelper.GetWaitForSeconds(delay);
+        if (delay > 0) yield return new WaitForSeconds(delay);
         if (duration > 0)
         {
             for (float elapsed = 0; elapsed <= duration; elapsed += Time.deltaTime)

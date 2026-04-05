@@ -1,11 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+#if CYSHARP_UNITASK
 using Cysharp.Threading.Tasks;
+#endif
 using UnityEngine;
 
-namespace Com.HorusGames.Runtime.Loading
+namespace Com.Krackhet.Runtime.Loading
 {
+#if CYSHARP_UNITASK
     public abstract class UILoadingBase :  UILayer
     {
         public float Process { get; private set; }
@@ -382,4 +385,5 @@ namespace Com.HorusGames.Runtime.Loading
             debugMode = enabled;
         }
     }
+#endif
 }

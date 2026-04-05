@@ -1,13 +1,11 @@
 using System;
 using System.Collections;
-using Com.HorusGames.Untape.Runtime.Audio;
-using Com.HorusGames.Untape.Runtime.Managers;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-namespace Com.HorusGames.UI.Components
+namespace Com.Krackhet.UI.Components
 {
     public class UIButton : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
     {
@@ -17,15 +15,19 @@ namespace Com.HorusGames.UI.Components
 
 #if ODIN_INSPECTOR
         [Sirenix.OdinInspector.ShowIf("@HasInteractionFXType(ButtonInteractionFXType.Fade)")]
+#endif
         [Range(0f, 1f)]
         [SerializeField] private float fadeTargetAlpha = 0.5f;
 
+#if ODIN_INSPECTOR
         [Sirenix.OdinInspector.ShowIf("@HasInteractionFXType(ButtonInteractionFXType.Scale)")]
+#endif
         [SerializeField] private float scaleDownFactor = 0.9f;
 
+#if ODIN_INSPECTOR
         [Sirenix.OdinInspector.ShowIf("@HasInteractionFXType(ButtonInteractionFXType.Drop)")]
-        [SerializeField] private float dropDownDistance = 20f;
 #endif
+        [SerializeField] private float dropDownDistance = 20f;
         [SerializeField] private bool m_interactable = true;
 
         public bool interactible
@@ -147,7 +149,6 @@ namespace Com.HorusGames.UI.Components
         private void Press()
         {
             onClick?.Invoke();
-            AudioManager.Instance?.PlaySound(SoundType.Button);
         }
 
         private bool HasInteractionFXType(ButtonInteractionFXType type)

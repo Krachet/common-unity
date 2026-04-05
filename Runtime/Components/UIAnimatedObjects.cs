@@ -1,6 +1,8 @@
 using System;
 using UnityEngine;
+#if DOTWEEN
 using DG.Tweening;
+#endif
 
 [Serializable]
 public class UIAnimatedObjects
@@ -12,6 +14,7 @@ public class UIAnimatedObjects
     public float animationDuration;
     public float animationDelay;
 
+#if DOTWEEN
     public Tween AnimateIn(UIObjectAnimationType.AnimationIn animationType)
     {
         switch (animationType)
@@ -114,4 +117,5 @@ public class UIAnimatedObjects
             .SetEase(Ease.InBack));
         return floatOutTween;
     }
+#endif
 }
