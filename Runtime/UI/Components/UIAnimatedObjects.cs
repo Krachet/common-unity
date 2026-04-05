@@ -1,18 +1,21 @@
 using System;
+using Com.Krackhet.Schemas;
 using UnityEngine;
 #if DOTWEEN
 using DG.Tweening;
 #endif
 
-[Serializable]
-public class UIAnimatedObjects
+namespace Com.Krackhet.Runtime.UI.Components
 {
-    public UIObjectAnimationType.AnimationIn animationInType;
-    public UIObjectAnimationType.AnimationOut animationOutType;
-    public GameObject animObject;
-    public bool joinPreviousObject;
-    public float animationDuration;
-    public float animationDelay;
+    [Serializable]
+    public class UIAnimatedObjects
+    {
+        public UIObjectAnimationType.AnimationIn animationInType;
+        public UIObjectAnimationType.AnimationOut animationOutType;
+        public GameObject animObject;
+        public bool joinPreviousObject;
+        public float animationDuration;
+        public float animationDelay;
 
 #if DOTWEEN
     public Tween AnimateIn(UIObjectAnimationType.AnimationIn animationType)
@@ -118,4 +121,5 @@ public class UIAnimatedObjects
         return floatOutTween;
     }
 #endif
+    }
 }

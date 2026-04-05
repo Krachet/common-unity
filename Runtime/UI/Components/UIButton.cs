@@ -5,7 +5,7 @@ using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-namespace Com.Krackhet.UI.Components
+namespace Com.Krackhet.Runtime.UI.Components
 {
     public class UIButton : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
     {
