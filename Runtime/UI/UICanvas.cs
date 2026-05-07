@@ -10,7 +10,7 @@ namespace Com.Krackhet.Runtime.UI
     public class UICanvas : MonoBehaviour
     {
 #if UNITY_EDITOR
-        [MenuItem("GameObject/UI/UICanvas")]
+        [MenuItem("GameObject/UI (External)/UICanvas")]
 #endif
         public static Canvas InstantiateUICanvas()
         {
@@ -49,7 +49,7 @@ namespace Com.Krackhet.Runtime.UI
             camera.allowMSAA = false;
             camera.orthographic = true;
             camera.depth = mainCamera.depth + 1;
-            camera.orthographicSize = 10;
+            camera.orthographicSize = 5;
             canvasObject.transform.position = Vector3.back * 10f;
             return camera;
         }
