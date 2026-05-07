@@ -14,7 +14,7 @@ namespace Com.Krackhet.Runtime.UI
 #endif
         public static Canvas InstantiateUICanvas()
         {
-            GameObject canvasObject = new GameObject("UICanvas");
+            GameObject canvasObject = new GameObject("UI Canvas");
             canvasObject.layer = 5;
             Canvas canvas = canvasObject.AddComponent<Canvas>();
             canvas.renderMode = RenderMode.ScreenSpaceCamera;
@@ -30,7 +30,7 @@ namespace Com.Krackhet.Runtime.UI
             canvasScaler.matchWidthOrHeight = 0.5f;
             if (FindAnyObjectByType<EventSystem>() == null)
             {
-                GameObject eventSystem = new GameObject(typeof(EventSystem).Name);
+                GameObject eventSystem = new GameObject("Event System");
                 eventSystem.AddComponent<EventSystem>();
                 eventSystem.AddComponent<StandaloneInputModule>();
             }
@@ -41,7 +41,7 @@ namespace Com.Krackhet.Runtime.UI
         private static Camera InstantiateRenderCamera()
         {
             Camera mainCamera = Camera.main;
-            GameObject canvasObject = new GameObject("UICamera");
+            GameObject canvasObject = new GameObject("UI Camera");
             Camera camera = canvasObject.AddComponent<Camera>();
             camera.clearFlags = CameraClearFlags.Depth;
             camera.cullingMask = 0;
