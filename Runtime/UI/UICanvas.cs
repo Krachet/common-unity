@@ -2,7 +2,6 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using Com.Krackhet.Runtime.Utilities;
-
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -18,15 +17,15 @@ namespace Com.Krackhet.Runtime.UI
             GameObject canvasObject = new GameObject("UICanvas");
             canvasObject.layer = 5;
             Canvas canvas = canvasObject.AddComponent<Canvas>();
-            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            canvas.renderMode = RenderMode.ScreenSpaceCamera;
             canvas.sortingOrder = 2;
-            // canvas.worldCamera = InstantiateRenderCamera();
+            canvas.worldCamera = InstantiateRenderCamera();
             canvas.planeDistance = 10;
             canvas.sortingLayerName = "UI";
             canvas.vertexColorAlwaysGammaSpace = true;
             CanvasScaler canvasScaler = canvasObject.AddComponent<CanvasScaler>();
             canvasScaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            canvasScaler.referenceResolution = new Vector2(886, 1920);
+            canvasScaler.referenceResolution = new Vector2(1080, 1920);
             canvasScaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
             canvasScaler.matchWidthOrHeight = 0.5f;
             if (FindAnyObjectByType<EventSystem>() == null)

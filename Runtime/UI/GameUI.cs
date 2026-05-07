@@ -4,12 +4,6 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using Com.Krackhet.Runtime.Utilities;
-
-#if UNITY_EDITOR
-using System.IO;
-using UnityEditor;
-using UnityEditor.ProjectWindowCallback;
-#endif
 using Object = UnityEngine.Object;
 
 namespace Com.Krackhet.Runtime.UI
@@ -23,12 +17,6 @@ namespace Com.Krackhet.Runtime.UI
         private static Dictionary<Type, PopUpLayer> popUpLayers;
         private static Dictionary<int, Transform> groups;
         private const int GROUP_ORDER_SPACING = 10;
-#if UNITY_EDITOR
-        private const string CREATE_UI_LAYER_PREFAB_MENU_ITEM = "Assets/Create/UI/UILayer Prefab";
-        private const string DEFAULT_UI_LAYER_PREFAB_NAME = "NewUILayer.prefab";
-        private const string CONTEXT_OBJECT_NAME = "context";
-#endif
-
         public static Camera RenderCamera { get; private set; }
         public static Canvas Canvas => canvas;
         public static int ActiveLayerCount => activeLayers.Count;
@@ -193,100 +181,5 @@ namespace Com.Krackhet.Runtime.UI
             }
             return groups[order];
         }
-#if UNITY_EDITOR
-        [MenuItem(CREATE_UI_LAYER_PREFAB_MENU_ITEM, false, 120)]
-        public static void CreateUILayerPrefab()
-        {
-            string folderPath = GetSelectedFolderPath();
-            string assetPath = AssetDatabase.GenerateUniqueAssetPath($"{folderPath}/{DEFAULT_UI_LAYER_PREFAB_NAME}");
-            Texture2D prefabIcon = EditorGUIUtility.IconContent("Prefab Icon").image as Texture2D;
-
-            ProjectWindowUtil.StartNameEditingIfProjectWindowExists(
-                new EntityId(),
-                ScriptableObject.CreateInstance<CreateUILayerPrefabAction>(),
-                assetPath,
-                prefabIcon,
-                null
-            );
-        }
-
-        [MenuItem(CREATE_UI_LAYER_PREFAB_MENU_ITEM, true)]
-        private static bool ValidateCreateUILayerPrefab()
-        {
-            return !EditorApplication.isPlayingOrWillChangePlaymode;
-        }
-
-        private static string GetSelectedFolderPath()
-        {
-            string selectedPath = AssetDatabase.GetAssetPath(Selection.activeObject);
-
-            if (string.IsNullOrWhiteSpace(selectedPath))
-            {
-                return "Assets";
-            }
-
-            if (AssetDatabase.IsValidFolder(selectedPath))
-            {
-                return selectedPath;
-            }
-
-            string folderPath = Path.GetDirectoryName(selectedPath);
-            if (string.IsNullOrWhiteSpace(folderPath))
-            {
-                return "Assets";
-            }
-
-            return folderPath.Replace("\\", "/");
-        }
-
-        private static void CreateUILayerPrefabAtPath(string assetPath)
-        {
-            string prefabName = Path.GetFileNameWithoutExtension(assetPath);
-            GameObject prefabRoot = CreateUILayerRoot(prefabName);
-
-            try
-            {
-                PrefabUtility.SaveAsPrefabAsset(prefabRoot, assetPath);
-                AssetDatabase.SaveAssets();
-                AssetDatabase.ImportAsset(assetPath);
-
-                GameObject createdPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(assetPath);
-                Selection.activeObject = createdPrefab;
-                EditorGUIUtility.PingObject(createdPrefab);
-            }
-            finally
-            {
-                Object.DestroyImmediate(prefabRoot);
-            }
-        }
-
-        private static GameObject CreateUILayerRoot(string layerName)
-        {
-            RectTransform root = CreateRectTransform(layerName, null);
-            CreateRectTransform(CONTEXT_OBJECT_NAME, root);
-            return root.gameObject;
-        }
-
-        private static RectTransform CreateRectTransform(string objectName, Transform parent)
-        {
-            RectTransform rectTransform = new GameObject(objectName, typeof(RectTransform)).GetComponent<RectTransform>();
-            if (parent != null)
-            {
-                rectTransform.SetParent(parent, false);
-            }
-
-            rectTransform.Reset();
-            rectTransform.Stretch(0f);
-            return rectTransform;
-        }
-
-        private sealed class CreateUILayerPrefabAction : AssetCreationEndAction
-        {
-            public override void Action(EntityId entityId, string pathName, string resourceFile)
-            {
-                CreateUILayerPrefabAtPath(pathName);
-            }
-        }
-#endif
     }
 }
