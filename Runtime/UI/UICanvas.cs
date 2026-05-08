@@ -15,11 +15,10 @@ namespace Com.Krackhet.Runtime.UI
         public static Canvas InstantiateUICanvas()
         {
             GameObject canvasObject = new GameObject("UI Canvas");
-            canvasObject.layer = 5;
             Canvas canvas = canvasObject.AddComponent<Canvas>();
-            canvas.renderMode = RenderMode.ScreenSpaceCamera;
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
             canvas.sortingOrder = 2;
-            canvas.worldCamera = InstantiateRenderCamera();
+            // canvas.worldCamera = InstantiateRenderCamera();
             canvas.planeDistance = 10;
             canvas.sortingLayerName = "UI";
             canvas.vertexColorAlwaysGammaSpace = true;
@@ -38,20 +37,20 @@ namespace Com.Krackhet.Runtime.UI
             canvasObject.AddComponent<UICanvas>();
             return canvas;
         }
-        private static Camera InstantiateRenderCamera()
-        {
-            Camera mainCamera = Camera.main;
-            GameObject canvasObject = new GameObject("UI Camera");
-            Camera camera = canvasObject.AddComponent<Camera>();
-            camera.clearFlags = CameraClearFlags.Depth;
-            camera.cullingMask = 0;
-            camera.SetCullingMask("UI", 6);
-            camera.allowMSAA = false;
-            camera.orthographic = true;
-            camera.depth = mainCamera.depth + 1;
-            camera.orthographicSize = 5;
-            canvasObject.transform.position = Vector3.back * 10f;
-            return camera;
-        }
+        // private static Camera InstantiateRenderCamera()
+        // {
+        //     Camera mainCamera = Camera.main;
+        //     GameObject canvasObject = new GameObject("UI Camera");
+        //     Camera camera = canvasObject.AddComponent<Camera>();
+        //     camera.clearFlags = CameraClearFlags.Depth;
+        //     camera.cullingMask = 0;
+        //     camera.SetCullingMask("UI", 6);
+        //     camera.allowMSAA = false;
+        //     camera.orthographic = true;
+        //     camera.depth = mainCamera.depth + 1;
+        //     camera.orthographicSize = 5;
+        //     canvasObject.transform.position = Vector3.back * 10f;
+        //     return camera;
+        // }
     }
 }

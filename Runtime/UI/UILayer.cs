@@ -5,37 +5,57 @@ using Com.Krackhet.Runtime.UI.Components;
 #if DOTWEEN
 using DG.Tweening;
 #endif
+
 using UnityEngine;
 
 namespace Com.Krackhet.Runtime.UI
 {
     public abstract class UILayer : MonoBehaviour
     {
-        #region Protected Field 
-        protected Action onHideEvent;
-        protected bool onFirstShow;
-        protected UILayer previousLayer;
+        #region Events & Delegates
+        protected Action _hideCallback;
         #endregion
 
-        #region Public Properties
+        #region Interfaces & Properties
         public virtual int Order => 0;
-        public virtual bool UseManualHide => true;
-        public virtual bool DestroyOnHide => false;
+
         public virtual bool ResetPositionOnShow => false;
+
+        public virtual bool UseManualHide => true;
+
+        public virtual bool DestroyOnHide => false;
+
         public virtual List<Type> PopUpAttached => null;
-        public bool IsActive => context.activeSelf;
+
+        public bool IsActive => _context.activeSelf;
         #endregion
 
-        #region Serialized Field
+        #region Serialized Fields
         [Header("Default Settings")]
-        [SerializeField] protected GameObject context;
-        [SerializeField] protected List<UIAnimatedObjects> animatedObjects;
+        [SerializeField]
+        protected GameObject _context;
+
+        [SerializeField]
+        protected List<UIAnimatedObjects> _animatedObjects;
+        #endregion
+
+        #region Protected Fields
+        protected bool _hasShownOnce;
+        protected UILayer _previousLayer;
+        #endregion
+
+        #region Unity Callbacks
+        protected virtual void Awake()
+        {
+            GameUI.Register(this);
+            _context?.SetActive(false);
+        }
         #endregion
 
         #region Public Methods
         public virtual void Show(Action hideCallback)
         {
-            onHideEvent = hideCallback;
+            _hideCallback = hideCallback;
             Show();
         }
 
@@ -45,19 +65,20 @@ namespace Com.Krackhet.Runtime.UI
 
         public virtual void Show()
         {
-            if (!onFirstShow)
+            if (!_hasShownOnce)
             {
-                onFirstShow = true;
+                _hasShownOnce = true;
                 Init();
             }
+
             GameUI.Add(this);
             HideAnimatedObjectsAtStart();
-            context?.SetActive(true);
+            _context?.SetActive(true);
         }
 
         public virtual void Show(UILayer backTrackLayer)
         {
-            previousLayer = backTrackLayer;
+            _previousLayer = backTrackLayer;
             Show();
         }
 
@@ -65,18 +86,21 @@ namespace Com.Krackhet.Runtime.UI
         {
             GameUI.Remove(this);
 
-            onHideEvent?.Invoke();
-            previousLayer?.Show();
+            _hideCallback?.Invoke();
+            _previousLayer?.Show();
 
-            onHideEvent = null;
-            previousLayer = null;
+            _hideCallback = null;
+            _previousLayer = null;
 
             if (DestroyOnHide)
             {
                 GameUI.Unregister(this);
                 Destroy(gameObject);
             }
-            else context?.SetActive(false);
+            else
+            {
+                _context?.SetActive(false);
+            }
         }
 
         public bool IsType<Layer>() where Layer : UILayer
@@ -87,72 +111,101 @@ namespace Com.Krackhet.Runtime.UI
         }
         #endregion
 
-        protected virtual void Awake()
-        {
-            GameUI.Register(this);
-            context?.SetActive(false);
-        }
-
         #region Protected Methods
 #if DOTWEEN
-    protected virtual Tween AnimateObjectsIn()
-    {
-        Sequence spawnSeq = DOTween.Sequence();
-        foreach (UIAnimatedObjects animatedObject in animatedObjects)
+        protected virtual Tween AnimateObjectsIn()
         {
-            if (animatedObject.animObject == null) continue;
-            animatedObject.animObject.SetActive(true);
-            if (animatedObject.joinPreviousObject)
-                spawnSeq.Join(AnimateObjectIn(animatedObject));
-            else
-                spawnSeq.Append(AnimateObjectIn(animatedObject));
-        }
-        return spawnSeq;
-    }
+            Sequence spawnSequence = DOTween.Sequence();
 
-    protected virtual Tween AnimateObjectsOut()
-    {
-        Sequence hideSeq = DOTween.Sequence();
-        foreach (UIAnimatedObjects animatedObject in animatedObjects)
+            foreach (UIAnimatedObjects animatedObject in _animatedObjects)
+            {
+                if (animatedObject.animObject == null)
+                {
+                    continue;
+                }
+
+                animatedObject.animObject.SetActive(true);
+
+                if (animatedObject.joinPreviousObject)
+                {
+                    spawnSequence.Join(AnimateObjectIn(animatedObject));
+                }
+                else
+                {
+                    spawnSequence.Append(AnimateObjectIn(animatedObject));
+                }
+            }
+
+            return spawnSequence;
+        }
+
+        protected virtual Tween AnimateObjectsOut()
         {
-            if (animatedObject.animObject == null) continue;
-            if (animatedObject.joinPreviousObject)
-                hideSeq.Join(AnimateObjectOut(animatedObject));
-            else
-                hideSeq.Append(AnimateObjectOut(animatedObject));
+            Sequence hideSequence = DOTween.Sequence();
+
+            foreach (UIAnimatedObjects animatedObject in _animatedObjects)
+            {
+                if (animatedObject.animObject == null)
+                {
+                    continue;
+                }
+
+                if (animatedObject.joinPreviousObject)
+                {
+                    hideSequence.Join(AnimateObjectOut(animatedObject));
+                }
+                else
+                {
+                    hideSequence.Append(AnimateObjectOut(animatedObject));
+                }
+            }
+
+            return hideSequence;
         }
-        return hideSeq;
-    }
 
-    protected virtual Tween AnimateObjectIn(UIAnimatedObjects animatedObject)
-    {
-        return animatedObject.AnimateIn();
-    }
+        protected virtual Tween AnimateObjectIn(UIAnimatedObjects animatedObject)
+        {
+            return animatedObject.AnimateIn();
+        }
 
-    protected virtual Tween AnimateObjectOut(UIAnimatedObjects animatedObject)
-    {
-        return animatedObject.AnimateOut();
-    }
+        protected virtual Tween AnimateObjectOut(UIAnimatedObjects animatedObject)
+        {
+            return animatedObject.AnimateOut();
+        }
 #endif
 
         protected virtual void HideAnimatedObjectsAtStart()
         {
-            if (animatedObjects == null) return;
-            foreach (UIAnimatedObjects animatedObject in animatedObjects)
+            if (_animatedObjects == null)
             {
-                if (animatedObject == null) continue;
+                return;
+            }
+
+            foreach (UIAnimatedObjects animatedObject in _animatedObjects)
+            {
+                if (animatedObject == null)
+                {
+                    continue;
+                }
+
                 animatedObject.animObject.SetActive(false);
             }
         }
 
         protected float GetAnimatedObjectsTimer(int objectIndex)
         {
-            float timer = 0;
+            float timer = 0f;
+
             for (int i = 0; i < objectIndex; i++)
             {
-                if (animatedObjects[i].joinPreviousObject) continue;
-                timer += animatedObjects[i].animationDuration;
+                if (_animatedObjects[i].joinPreviousObject)
+                {
+                    continue;
+                }
+
+                timer += _animatedObjects[i].animationDuration;
             }
+
             return timer;
         }
         #endregion
