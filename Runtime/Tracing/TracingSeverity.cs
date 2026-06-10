@@ -1,4 +1,4 @@
-namespace Com.HorusGames.Untape.Runtime.Trace
+namespace Com.Krackhet.Runtime.Trace
 {
     public enum TracingSeverity
     {

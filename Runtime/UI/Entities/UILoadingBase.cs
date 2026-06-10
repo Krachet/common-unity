@@ -8,7 +8,7 @@ using Cysharp.Threading.Tasks;
 #endif
 using UnityEngine;
 
-namespace Com.Krackhet.Runtime.Loading
+namespace Com.Krackhet.Runtime.UI
 {
 #if CYSHARP_UNITASK
     public abstract class UILoadingBase : BaseUILayer 
@@ -53,7 +53,7 @@ namespace Com.Krackhet.Runtime.Loading
             loadingCts = null;
         }
 
-        protected override void OnDestroy()
+        private void OnDestroy()
         {
             loadingCts?.Cancel();
             loadingCts?.Dispose();

@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using Com.Krackhet.Runtime.Managers;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
@@ -7,7 +8,7 @@ using UnityEngine.UI;
 
 namespace Com.Krackhet.Runtime.UI.Components
 {
-    public class UIButton : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
+    public class UIButton : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IPointerEnterHandler, IPointerExitHandler
     {
         [SerializeField] private Graphic targetGraphic;
         [SerializeField] private ButtonInteractionFXType interactionFXType;
@@ -30,7 +31,7 @@ namespace Com.Krackhet.Runtime.UI.Components
         [SerializeField] private float dropDownDistance = 20f;
         [SerializeField] private bool m_interactable = true;
 
-        public bool interactible
+        public bool interactable
         {
             get => m_interactable;
             set
@@ -47,6 +48,9 @@ namespace Com.Krackhet.Runtime.UI.Components
 
         private Coroutine submitCoroutine;
         private CanvasGroup canvasGroup;
+        private bool _isPointerDown;
+        private bool _isPointerInside;
+        private const string buttonSFXName = "UI-sfx";
 
 #if ODIN_INSPECTOR
         [Sirenix.OdinInspector.Button("Contain target graphic")]
@@ -125,14 +129,36 @@ namespace Com.Krackhet.Runtime.UI.Components
 
         public void OnPointerDown(PointerEventData eventData)
         {
-            if (!targetGraphic.IsActive() || !interactible) return;
+            if (!targetGraphic.IsActive() || !interactable) return;
+            _isPointerDown = true;
+            _isPointerInside = true;
             ApplyInteractionFX();
+        }
+
+        public void OnPointerEnter(PointerEventData eventData)
+        {
+            _isPointerInside = true;
+            if (_isPointerDown)
+            {
+                ApplyInteractionFX();
+            }
+        }
+
+        public void OnPointerExit(PointerEventData eventData)
+        {
+            _isPointerInside = false;
+            if (_isPointerDown)
+            {
+                ResetInteractionFX();
+            }
         }
 
         public void OnPointerUp(PointerEventData eventData)
         {
-            if (!targetGraphic.IsActive() || !interactible) return;
+            if (!targetGraphic.IsActive() || !interactable) return;
+            _isPointerDown = false;
             ResetInteractionFX();
+            if (!_isPointerInside) return;
             if (submitCoroutine != null)
             {
                 StopCoroutine(submitCoroutine);
@@ -149,6 +175,7 @@ namespace Com.Krackhet.Runtime.UI.Components
         private void Press()
         {
             onClick?.Invoke();
+            GameInternalManager.AudioManager?.PlaySound(buttonSFXName); // Play button click sound effect if assigned
         }
 
         private bool HasInteractionFXType(ButtonInteractionFXType type)

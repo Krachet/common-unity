@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Com.HorusGames.Untape.Runtime.Trace
+namespace Com.Krackhet.Runtime.Trace
 {
-    [CreateAssetMenu(fileName = "TracingSettings", menuName = "Untape/Tracing Settings")]
+    [CreateAssetMenu(fileName = "TracingSettings", menuName = "Common/Tracing Settings")]
     public class TracingSettings : ScriptableObject
     {
         public TracingSeverity minimumSeverity = TracingSeverity.Info;
