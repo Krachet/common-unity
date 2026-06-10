@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 namespace Com.Krackhet.Runtime.UI
@@ -7,15 +6,22 @@ namespace Com.Krackhet.Runtime.UI
     [CreateAssetMenu(fileName = "UIManagerConfiguration", menuName = "Krackhet/UI/UIManagerConfiguration")]
     public class BaseUIManagerConfiguration : ScriptableObject
     {
-        public List<BaseUILayer> layerConfigurations = new List<BaseUILayer>();
+        [HideInInspector] public List<BaseUILayer> layerConfigurations = new List<BaseUILayer>();
 
         public List<BaseUILayerGroupConfiguration> layerGroupConfigurations = new List<BaseUILayerGroupConfiguration>();
 
         public void Initialize()
         {
-            layerConfigurations = layerGroupConfigurations != null ? 
-                layerGroupConfigurations.SelectMany(group => group.layerPrefab).ToList() : 
-                new List<BaseUILayer>();
+            layerConfigurations = new List<BaseUILayer>();
+
+            foreach (var groupConfig in layerGroupConfigurations)
+            {
+                foreach (var layer in groupConfig.layerPrefab)
+                {
+                    layer.SetLayerIndex(groupConfig.groupOrder);
+                    layerConfigurations.Add(layer);
+                }
+            }
         }
 
         public TLayer GetLayerPrefab<TLayer>() where TLayer : BaseUILayer

@@ -9,7 +9,6 @@ namespace Com.Krackhet.Runtime.UI
         [SerializeField]
         protected RectTransform layerContent;
 
-        [SerializeField]
         protected int layerIndex;
 
         protected bool isInitialized;
