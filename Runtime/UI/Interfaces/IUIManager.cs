@@ -8,7 +8,7 @@ namespace Com.Krackhet.Runtime.UI
         Camera RenderCamera { get; }
         Canvas UICanvas { get; }
 
-        void Initialise();
+        void Initialize();
         void RegisterLayer(IUILayer layer);
         void UnregisterLayer(IUILayer layer);
         void AddLayer(IUILayer layer);

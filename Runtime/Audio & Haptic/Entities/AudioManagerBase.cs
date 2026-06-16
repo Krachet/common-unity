@@ -21,6 +21,9 @@ namespace Com.Krackhet.Runtime.Audio
         protected AudioConfig _audioConfig;
         #endregion
 
+        protected bool _isMusicEnabled;
+        protected bool _isSoundEnabled;
+
         protected override void Awake()
         {
             base.Awake();
@@ -30,44 +33,28 @@ namespace Com.Krackhet.Runtime.Audio
             _sfxAudioSource.outputAudioMixerGroup = _audioMixer.FindMatchingGroups("Sound")[0];
         }
 
-        public virtual void PlayAudio(AudioClip audioClip, AudioClipType audioType, float volume = 1f)
+        public virtual void PlayAudio(AudioClip audioClip, int audioType, float volume = 1f)
         {
             switch (audioType)
             {
-                case AudioClipType.Sound:
+                case 0: // Sound
                     _sfxAudioSource.PlayOneShot(audioClip, volume);
                     break;
-                case AudioClipType.Music:
+                case 1: // Music
                     _musicAudioSource.clip = audioClip;
                     _musicAudioSource.volume = volume;
+                    _musicAudioSource.loop = true;
                     _musicAudioSource.Play();
                     break;
             }
         }
 
-        public void PlayMusic(AudioClip audioClip, float volume = 1f)
+        public virtual void PlayAudio(string audioName, int audioType, float volume = 1f)
         {
-            var audioClipInfo = _audioConfig.GetAudioClip(audioClip.name, AudioClipType.Music);
-            if (audioClipInfo != null)
+            var audioClip = GetAudioClipInfo(audioName, audioType);
+            if (audioClip != null)
             {
-                PlayAudio(audioClipInfo, AudioClipType.Music, volume);
-            }
-            else
-            {
-                Debug.LogWarning($"Audio clip with name {audioClip.name} not found.");
-            }
-        }
-
-        public void PlaySound(string clipName, float volume = 1f)
-        {
-            var audioClipInfo = _audioConfig.GetAudioClip(clipName, AudioClipType.Sound);
-            if (audioClipInfo != null)
-            {
-                PlayAudio(audioClipInfo, AudioClipType.Sound, volume);
-            }
-            else
-            {
-                Debug.LogWarning($"Audio clip with name {clipName} not found.");
+                PlayAudio(audioClip, audioType, volume);
             }
         }
 
@@ -84,7 +71,19 @@ namespace Com.Krackhet.Runtime.Audio
             }
         }
 
-        protected AudioClip GetAudioClipInfo(string clipName, AudioClipType clipType)
+        public void EnableMusic(bool isEnabled)
+        {
+            _isMusicEnabled = isEnabled;
+            _musicAudioSource.mute = !isEnabled;
+        }
+
+        public void EnableSound(bool isEnabled)
+        {
+            _isSoundEnabled = isEnabled;
+            _sfxAudioSource.mute = !isEnabled;
+        }
+
+        protected AudioClip GetAudioClipInfo(string clipName, int clipType)
         {
             var audioClipInfo = _audioConfig.GetAudioClip(clipName, clipType);
             if (audioClipInfo != null)

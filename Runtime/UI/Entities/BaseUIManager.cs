@@ -55,10 +55,18 @@ namespace Com.Krackhet.Runtime.UI
         {
             CacheComponents();
         }
+
+        void Update()
+        {
+            if (Input.GetKeyDown(KeyCode.P))
+            {
+                ToggleCanvas();
+            }  
+        }
         #endregion
 
         #region Public Methods 
-        public virtual void Initialise()
+        public virtual void Initialize()
         {
             activeLayers = new List<IUILayer>();
             uiLayers = new Dictionary<Type, IUILayer>();
@@ -213,6 +221,11 @@ namespace Com.Krackhet.Runtime.UI
                 overrideCanvas.additionalShaderChannels = AdditionalCanvasShaderChannels.TexCoord1;
             }
             return uiLayerGroups[order];
+        }
+
+        private void ToggleCanvas()
+        {
+            uiCanvas.SetActive(!uiCanvas.gameObject.activeSelf);
         }
         #endregion
     }

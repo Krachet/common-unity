@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Com.Krackhet.Runtime.Trace
 {
-    [CreateAssetMenu(fileName = "TracingSettings", menuName = "Common/Tracing Settings")]
+    [CreateAssetMenu(fileName = "TracingSettings", menuName = "Krackhet/Tracing Settings")]
     public class TracingSettings : ScriptableObject
     {
         public TracingSeverity minimumSeverity = TracingSeverity.Info;

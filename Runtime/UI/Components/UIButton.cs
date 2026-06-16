@@ -175,7 +175,7 @@ namespace Com.Krackhet.Runtime.UI.Components
         private void Press()
         {
             onClick?.Invoke();
-            GameInternalManager.AudioManager?.PlaySound(buttonSFXName); // Play button click sound effect if assigned
+            GameInternalManager.AudioManager?.PlayAudio(buttonSFXName, 0); // Play button click sound effect if assigned
         }
 
         private bool HasInteractionFXType(ButtonInteractionFXType type)

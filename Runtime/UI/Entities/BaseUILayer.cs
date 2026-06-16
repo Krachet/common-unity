@@ -1,5 +1,5 @@
-using UnityEngine;
 using System;
+using UnityEngine;
 
 namespace Com.Krackhet.Runtime.UI
 {
@@ -58,6 +58,7 @@ namespace Com.Krackhet.Runtime.UI
             if (uiManager != null)
                 uiManager.RemoveLayer(this);
 
+            onHideCallback?.Invoke();
             layerContent.gameObject.SetActive(false);
         }
 

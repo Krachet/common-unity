@@ -2,8 +2,8 @@ using UnityEngine;
 
 namespace Com.Krackhet.Runtime.Haptic
 {
-    [CreateAssetMenu(fileName = "HapticConfig", menuName = "Common/Haptic/HapticConfig")]
-    public class HapticConfig : MonoBehaviour
+    [CreateAssetMenu(fileName = "HapticConfiguration", menuName = "Krackhet/Haptic/HapticConfiguration")]
+    public class HapticConfiguration : ScriptableObject
     {
         // Start is called once before the first execution of Update after the MonoBehaviour is created
         void Start()
