@@ -55,14 +55,6 @@ namespace Com.Krackhet.Runtime.UI
         {
             CacheComponents();
         }
-
-        void Update()
-        {
-            if (Input.GetKeyDown(KeyCode.P))
-            {
-                ToggleCanvas();
-            }  
-        }
         #endregion
 
         #region Public Methods 
@@ -223,10 +215,6 @@ namespace Com.Krackhet.Runtime.UI
             return uiLayerGroups[order];
         }
 
-        private void ToggleCanvas()
-        {
-            uiCanvas.SetActive(!uiCanvas.gameObject.activeSelf);
-        }
         #endregion
     }
 }

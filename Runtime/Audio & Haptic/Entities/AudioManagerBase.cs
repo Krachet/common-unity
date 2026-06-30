@@ -28,7 +28,6 @@ namespace Com.Krackhet.Runtime.Audio
         {
             base.Awake();
             GameInternalManager.RegisterAudioManager(this);
-            // Ensure that the audio sources are properly set up
             _musicAudioSource.outputAudioMixerGroup = _audioMixer.FindMatchingGroups("Music")[0];
             _sfxAudioSource.outputAudioMixerGroup = _audioMixer.FindMatchingGroups("Sound")[0];
         }
