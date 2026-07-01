@@ -13,7 +13,7 @@ namespace Com.Krackhet.Editor.Timeline
 
             if (clip.asset is SingleFramePlayableClip)
             {
-                clip.duration = 1f/60f;
+                clip.duration = 10f/60f;
             }
         }
     }

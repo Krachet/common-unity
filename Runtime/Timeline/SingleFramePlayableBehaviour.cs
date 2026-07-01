@@ -9,19 +9,18 @@ namespace Com.Krackhet.Runtime.Timeline
         public override void OnBehaviourPlay(Playable playable, FrameData info)
         {
             base.OnBehaviourPlay(playable, info);
-            _frameCount = 0;
         }
 
         public override void ProcessFrame(Playable playable, FrameData info, object playerData)
         {
             base.ProcessFrame(playable, info, playerData);
+            if (_frameCount >= 1) return;
             _frameCount++;
-            if (_frameCount == 1)
-            {
-                OnFirstFramePlay();
-            }
+            OnFirstFramePlay();
         }
 
-        protected virtual void OnFirstFramePlay() { }
+        protected virtual void OnFirstFramePlay()
+        {
+        }
     }
 }
