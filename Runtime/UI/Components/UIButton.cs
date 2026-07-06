@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using Com.Krackhet.Runtime.Managers;
 using UnityEngine;
 using UnityEngine.Events;
@@ -8,282 +9,348 @@ using UnityEngine.UI;
 
 namespace Com.Krackhet.Runtime.UI.Components
 {
-    public class UIButton : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IPointerEnterHandler, IPointerExitHandler
+    public class UIButton : Selectable, IPointerClickHandler, ISubmitHandler
     {
-        [SerializeField] private Graphic targetGraphic;
-        [SerializeField] private ButtonInteractionFXType interactionFXType;
-        [SerializeField] private float interactionFXDuration = 0.05f;
+        #region Events & Delegates
+        public UnityEvent onClick = new UnityEvent();
+        #endregion
+
+        #region Serialized Fields
+        [SerializeField]
+        private Graphic _targetGraphic;
+
+        [SerializeField]
+        private ButtonInteractionFXType _interactionFXType;
+
+        [SerializeField]
+        private float _interactionFXDuration = 0.05f;
 
 #if ODIN_INSPECTOR
         [Sirenix.OdinInspector.ShowIf("@HasInteractionFXType(ButtonInteractionFXType.Fade)")]
 #endif
         [Range(0f, 1f)]
-        [SerializeField] private float fadeTargetAlpha = 0.5f;
+        [SerializeField]
+        private float _fadeTargetAlpha = 0.5f;
 
 #if ODIN_INSPECTOR
         [Sirenix.OdinInspector.ShowIf("@HasInteractionFXType(ButtonInteractionFXType.Scale)")]
 #endif
-        [SerializeField] private float scaleDownFactor = 0.9f;
+        [SerializeField]
+        private float _scaleDownFactor = 0.9f;
 
 #if ODIN_INSPECTOR
         [Sirenix.OdinInspector.ShowIf("@HasInteractionFXType(ButtonInteractionFXType.Drop)")]
 #endif
-        [SerializeField] private float dropDownDistance = 20f;
-        [SerializeField] private bool m_interactable = true;
+        [SerializeField]
+        private float _dropDownDistance = 20f;
 
-        public bool interactable
+#if UNITY_EDITOR
+        [SerializeField]
+        [HideInInspector]
+        private bool _migratedInteractable = true;
+#endif
+        #endregion
+
+        #region Private Fields
+        private Coroutine _submitCoroutine;
+        private bool _isPressed;
+        private const string ButtonSfxName = "UI-sfx";
+        #endregion
+
+        #region Unity Callbacks
+        protected override void Awake()
         {
-            get => m_interactable;
-            set
+            base.Awake();
+
+            transition = Transition.None;
+
+            if (_targetGraphic != null)
+                base.targetGraphic = _targetGraphic;
+
+#if UNITY_EDITOR
+            interactable = _migratedInteractable;
+#endif
+        }
+
+#if UNITY_EDITOR
+        protected override void OnValidate()
+        {
+            base.OnValidate();
+            if (_targetGraphic != null)
+                base.targetGraphic = _targetGraphic;
+        }
+#endif
+
+        protected override void DoStateTransition(SelectionState state, bool instant)
+        {
+            if (_targetGraphic == null || !gameObject.activeInHierarchy)
+                return;
+
+            switch (state)
             {
-                m_interactable = value;
-                if (targetGraphic != null)
-                {
-                    targetGraphic.raycastTarget = value;
-                    targetGraphic.color = value ? Color.white : Color.gray; // Simple visual feedback for interactability
-                }
+                case SelectionState.Disabled:
+                    _targetGraphic.raycastTarget = false;
+                    _targetGraphic.CrossFadeColor(
+                        Color.gray, colors.fadeDuration, true, true);
+                    break;
+
+                case SelectionState.Normal:
+                case SelectionState.Highlighted:
+                    _targetGraphic.raycastTarget = true;
+                    _targetGraphic.CrossFadeColor(
+                        Color.white, colors.fadeDuration, true, true);
+                    break;
             }
         }
-        public UnityEvent onClick = new UnityEvent();
 
-        private Coroutine submitCoroutine;
-        private CanvasGroup canvasGroup;
-        private bool _isPointerDown;
-        private bool _isPointerInside;
-        private const string buttonSFXName = "UI-sfx";
+        public override void OnPointerDown(PointerEventData eventData)
+        {
+            base.OnPointerDown(eventData);
 
+            if (!IsInteractable() || !IsActive() || _targetGraphic == null)
+                return;
+
+            _isPressed = true;
+            ApplyInteractionFX();
+        }
+
+        public override void OnPointerUp(PointerEventData eventData)
+        {
+            base.OnPointerUp(eventData);
+
+            _isPressed = false;
+
+            if (!IsInteractable() || !IsActive() || _targetGraphic == null)
+                return;
+
+            ResetInteractionFX();
+        }
+
+        public override void OnPointerEnter(PointerEventData eventData)
+        {
+            base.OnPointerEnter(eventData);
+
+            if (_isPressed)
+                ApplyInteractionFX();
+        }
+
+        public override void OnPointerExit(PointerEventData eventData)
+        {
+            base.OnPointerExit(eventData);
+
+            if (_isPressed)
+                ResetInteractionFX();
+        }
+        #endregion
+
+        #region IPointerClickHandler
+        public void OnPointerClick(PointerEventData eventData)
+        {
+            if (!IsActive() || !IsInteractable())
+                return;
+
+            if (_submitCoroutine != null)
+                StopCoroutine(_submitCoroutine);
+
+            _submitCoroutine = StartCoroutine(HandleSubmit());
+        }
+        #endregion
+
+        #region ISubmitHandler
+        public void OnSubmit(BaseEventData eventData)
+        {
+            if (!IsActive() || !IsInteractable())
+                return;
+
+            Press();
+        }
+        #endregion
+
+        #region Editor Helpers
 #if ODIN_INSPECTOR
         [Sirenix.OdinInspector.Button("Contain target graphic")]
         private void ContainTargetGraphic()
         {
-            if (targetGraphic == null) return;
+            if (_targetGraphic == null)
+                return;
 
             RectTransform buttonRect = GetComponent<RectTransform>();
+            if (buttonRect == null)
+                return;
 
-            if (buttonRect == null) return;
-
-            // Adjust the size of the button to match the target graphic
-            buttonRect.sizeDelta = targetGraphic.rectTransform.sizeDelta;
-
-            // Jump to the target graphic's position
-            buttonRect.anchoredPosition = targetGraphic.rectTransform.anchoredPosition;
-            targetGraphic.rectTransform.anchoredPosition = Vector2.zero; // Reset target graphic's position to be relative to the button
+            buttonRect.sizeDelta = _targetGraphic.rectTransform.sizeDelta;
+            buttonRect.anchoredPosition = _targetGraphic.rectTransform.anchoredPosition;
+            _targetGraphic.rectTransform.anchoredPosition = Vector2.zero;
         }
+
         [Sirenix.OdinInspector.Button("Fit target graphic")]
         private void FitTargetGraphic()
         {
-            if (targetGraphic == null) return;
+            if (_targetGraphic == null)
+                return;
 
             RectTransform buttonRect = GetComponent<RectTransform>();
+            if (buttonRect == null)
+                return;
 
-            if (buttonRect == null) return;
-
-            // Adjust the size of the target graphic to match the button
-            targetGraphic.rectTransform.sizeDelta = buttonRect.sizeDelta;
-
-            // Reset target graphic's position to be centered within the button
-            targetGraphic.rectTransform.anchoredPosition = Vector2.zero;
+            _targetGraphic.rectTransform.sizeDelta = buttonRect.sizeDelta;
+            _targetGraphic.rectTransform.anchoredPosition = Vector2.zero;
         }
 #endif
+        #endregion
 
+        #region Internal API (for ButtonAttachment)
+        internal float InteractionFXDuration => _interactionFXDuration;
+        internal float FadeTargetAlpha => _fadeTargetAlpha;
+        internal float ScaleDownFactor => _scaleDownFactor;
+        internal float DropDownDistance => _dropDownDistance;
+
+        internal bool HasInteractionFXType(ButtonInteractionFXType type)
+        {
+            return (_interactionFXType & type) == type;
+        }
+        #endregion
+
+        #region Private Methods
         private void ApplyInteractionFX()
         {
-            if (targetGraphic == null) return;
+            if (_targetGraphic == null)
+                return;
 
             if (HasInteractionFXType(ButtonInteractionFXType.Fade))
-            {
                 StartCoroutine(FadeFX());
-            }
 
             if (HasInteractionFXType(ButtonInteractionFXType.Scale))
-            {
                 StartCoroutine(ScaleDownFX());
-            }
 
             if (HasInteractionFXType(ButtonInteractionFXType.Drop))
-            {
                 StartCoroutine(DropDownFX());
-            }
         }
 
         private void ResetInteractionFX()
         {
-            if (targetGraphic == null) return;
+            if (_targetGraphic == null)
+                return;
 
-            // Reset all effects to default state
             if (HasInteractionFXType(ButtonInteractionFXType.Scale))
-            {
                 StartCoroutine(ResetScaleFX());
-            }
 
             if (HasInteractionFXType(ButtonInteractionFXType.Drop))
-            {
-                StartCoroutine(ResetPos());
-            }
+                StartCoroutine(ResetPositionFX());
 
             if (HasInteractionFXType(ButtonInteractionFXType.Fade))
-            {
                 StartCoroutine(ResetFadeFX());
-            }
         }
 
-        public void OnPointerDown(PointerEventData eventData)
+        private IEnumerator HandleSubmit()
         {
-            if (!targetGraphic.IsActive() || !interactable) return;
-            _isPointerDown = true;
-            _isPointerInside = true;
-            ApplyInteractionFX();
-        }
-
-        public void OnPointerEnter(PointerEventData eventData)
-        {
-            _isPointerInside = true;
-            if (_isPointerDown)
-            {
-                ApplyInteractionFX();
-            }
-        }
-
-        public void OnPointerExit(PointerEventData eventData)
-        {
-            _isPointerInside = false;
-            if (_isPointerDown)
-            {
-                ResetInteractionFX();
-            }
-        }
-
-        public void OnPointerUp(PointerEventData eventData)
-        {
-            if (!targetGraphic.IsActive() || !interactable) return;
-            _isPointerDown = false;
-            ResetInteractionFX();
-            if (!_isPointerInside) return;
-            if (submitCoroutine != null)
-            {
-                StopCoroutine(submitCoroutine);
-            }
-            submitCoroutine = StartCoroutine(OnSubmit());
-        }
-
-        public IEnumerator OnSubmit()
-        {
-            yield return new WaitForSeconds(interactionFXDuration);
+            yield return new WaitForSeconds(_interactionFXDuration);
             Press();
         }
 
         private void Press()
         {
             onClick?.Invoke();
-            GameInternalManager.AudioManager?.PlayAudio(buttonSFXName, 0); // Play button click sound effect if assigned
+            GameInternalManager.AudioManager?.PlayAudio(ButtonSfxName, 0);
         }
+        #endregion
 
-        private bool HasInteractionFXType(ButtonInteractionFXType type)
-        {
-            return (interactionFXType & type) == type;
-        }
-
-        void Awake()
-        {
-            canvasGroup = GetComponent<CanvasGroup>();
-            if (canvasGroup == null)
-            {
-                canvasGroup = gameObject.AddComponent<CanvasGroup>();
-            }
-        }
-
-
-        #region --------------- Interaction FX Coroutines ---------------
+        #region Interaction FX Coroutines
         private IEnumerator FadeFX()
         {
+            Color originalColor = _targetGraphic.color;
+            Color targetColor = new Color(
+                originalColor.r, originalColor.g, originalColor.b, _fadeTargetAlpha);
             float timer = 0f;
 
-            while (timer <= interactionFXDuration)
+            while (timer <= _interactionFXDuration)
             {
-                canvasGroup.alpha = Mathf.Lerp(1f, fadeTargetAlpha, timer / interactionFXDuration);
+                _targetGraphic.color = Color.Lerp(
+                    originalColor, targetColor, timer / _interactionFXDuration);
                 timer += Time.deltaTime;
                 yield return null;
             }
-
-            canvasGroup.alpha = fadeTargetAlpha;
+            _targetGraphic.color = targetColor;
         }
 
         private IEnumerator ResetFadeFX()
         {
+            Color currentColor = _targetGraphic.color;
+            Color targetColor = new Color(
+                currentColor.r, currentColor.g, currentColor.b, 1f);
             float timer = 0f;
 
-            while (timer <= interactionFXDuration)
+            while (timer <= _interactionFXDuration)
             {
-                canvasGroup.alpha = Mathf.Lerp(fadeTargetAlpha, 1f, timer / interactionFXDuration);
+                _targetGraphic.color = Color.Lerp(
+                    currentColor, targetColor, timer / _interactionFXDuration);
                 timer += Time.deltaTime;
                 yield return null;
             }
-
-            canvasGroup.alpha = 1f;
+            _targetGraphic.color = targetColor;
         }
 
         private IEnumerator ScaleDownFX()
         {
-            Vector3 originalScale = targetGraphic.transform.localScale;
-            Vector3 targetScale = originalScale * scaleDownFactor;
+            Vector3 originalScale = _targetGraphic.transform.localScale;
+            Vector3 targetScale = originalScale * _scaleDownFactor;
             float timer = 0f;
 
-            while (timer < interactionFXDuration)
+            while (timer < _interactionFXDuration)
             {
-                targetGraphic.transform.localScale = Vector3.Lerp(originalScale, targetScale, timer / interactionFXDuration);
+                _targetGraphic.transform.localScale = Vector3.Lerp(
+                    originalScale, targetScale, timer / _interactionFXDuration);
                 timer += Time.deltaTime;
                 yield return null;
             }
-
-            targetGraphic.transform.localScale = targetScale;
+            _targetGraphic.transform.localScale = targetScale;
         }
 
         private IEnumerator ResetScaleFX()
         {
-            Vector3 targetScale = Vector3.one;
-            Vector3 currentScale = targetGraphic.transform.localScale;
+            Vector3 currentScale = _targetGraphic.transform.localScale;
             float timer = 0f;
 
-            while (timer <= interactionFXDuration)
+            while (timer <= _interactionFXDuration)
             {
-                targetGraphic.transform.localScale = Vector3.Lerp(currentScale, targetScale, timer / interactionFXDuration);
+                _targetGraphic.transform.localScale = Vector3.Lerp(
+                    currentScale, Vector3.one, timer / _interactionFXDuration);
                 timer += Time.deltaTime;
                 yield return null;
             }
-
-            targetGraphic.transform.localScale = targetScale;
+            _targetGraphic.transform.localScale = Vector3.one;
         }
 
         private IEnumerator DropDownFX()
         {
-            Vector3 originalPosition = targetGraphic.transform.localPosition;
-            Vector3 targetPosition = originalPosition + Vector3.up * -dropDownDistance; // Drop down by dropDownDistance units
+            Vector3 originalPosition = _targetGraphic.transform.localPosition;
+            Vector3 targetPosition = originalPosition
+                + Vector3.up * -_dropDownDistance;
             float timer = 0f;
 
-            while (timer <= interactionFXDuration)
+            while (timer <= _interactionFXDuration)
             {
-                targetGraphic.transform.localPosition = Vector3.Lerp(originalPosition, targetPosition, timer / interactionFXDuration);
+                _targetGraphic.transform.localPosition = Vector3.Lerp(
+                    originalPosition, targetPosition, timer / _interactionFXDuration);
                 timer += Time.deltaTime;
                 yield return null;
             }
-
-            targetGraphic.transform.localPosition = targetPosition;
+            _targetGraphic.transform.localPosition = targetPosition;
         }
 
-        private IEnumerator ResetPos()
+        private IEnumerator ResetPositionFX()
         {
-            Vector3 targetPosition = Vector3.zero;
-            Vector3 currentPosition = targetGraphic.transform.localPosition;
+            Vector3 currentPosition = _targetGraphic.transform.localPosition;
             float timer = 0f;
 
-            while (timer <= interactionFXDuration)
+            while (timer <= _interactionFXDuration)
             {
-                targetGraphic.transform.localPosition = Vector3.Lerp(currentPosition, targetPosition, timer / interactionFXDuration);
+                _targetGraphic.transform.localPosition = Vector3.Lerp(
+                    currentPosition, Vector3.zero, timer / _interactionFXDuration);
                 timer += Time.deltaTime;
                 yield return null;
             }
-
-            targetGraphic.transform.localPosition = targetPosition;
+            _targetGraphic.transform.localPosition = Vector3.zero;
         }
         #endregion
     }
