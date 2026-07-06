@@ -96,6 +96,7 @@ namespace Com.Krackhet.Runtime.UI
         public void ScrollTo(int index)
         {
             _scrollTarget = (float)index / (panels.Count - 1);
+            _scrollIndex = index;
             SnappingToScrollTarget();
         }
 
