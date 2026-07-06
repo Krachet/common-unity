@@ -14,6 +14,7 @@ namespace Com.Krackhet.Runtime.UI
         #endregion
 
         #region Interfaces Fields
+        public RectTransform SpawnContent => _scrollRect.content;
         public List<RectTransform> panels => _panels;
         #endregion
 
@@ -41,6 +42,8 @@ namespace Com.Krackhet.Runtime.UI
         #region Unity Methods
         void Update()
         {
+            if (_panels.Count == 0) return;
+
             if (Input.GetMouseButtonDown(0))
             {
                 _isScrolling = true;
@@ -64,6 +67,41 @@ namespace Com.Krackhet.Runtime.UI
         }
         #endregion
 
+        #region Public Methods
+
+        public void AddPanel(RectTransform panelRect)
+        {
+            _panels.Add(panelRect);
+        }
+
+        public void RemovePanel(RectTransform panelRect)
+        {
+            if (_panels.Contains(panelRect)) _panels.Remove(panelRect);
+        }
+
+        public void ScrollNext()
+        {
+            _scrollIndex--;
+            _scrollTarget = (float)_scrollIndex / (panels.Count - 1);
+            SnappingToScrollTarget();
+        }
+
+        public void ScrollPrevious()
+        {
+            _scrollIndex++;
+            _scrollTarget = (float)_scrollIndex / (panels.Count - 1);
+            SnappingToScrollTarget();
+        }
+
+        public void ScrollTo(int index)
+        {
+            _scrollTarget = (float)index / (panels.Count - 1);
+            SnappingToScrollTarget();
+        }
+
+        #endregion
+
+        #region Private Methods
         private void HandleScrollingState()
         {
             float scrollValue = _scrollRect.normalizedPosition.x;
@@ -96,6 +134,7 @@ namespace Com.Krackhet.Runtime.UI
             );
             _scrollRect.normalizedPosition = new Vector2(targetPosition, 0);
         }
+        #endregion
     }
 
     public enum ScrollerState
