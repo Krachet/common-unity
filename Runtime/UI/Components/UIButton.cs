@@ -1,6 +1,5 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using Com.Krackhet.Runtime.Managers;
 using UnityEngine;
 using UnityEngine.Events;
@@ -13,6 +12,8 @@ namespace Com.Krackhet.Runtime.UI.Components
     {
         #region Events & Delegates
         public UnityEvent onClick = new UnityEvent();
+        public UnityEvent onPressed = new UnityEvent();
+        public UnityEvent onReleased = new UnityEvent();
         #endregion
 
         #region Serialized Fields
@@ -199,7 +200,7 @@ namespace Com.Krackhet.Runtime.UI.Components
 #endif
         #endregion
 
-        #region Internal API (for ButtonAttachment)
+        #region FX Parameters (for external readers)
         internal float InteractionFXDuration => _interactionFXDuration;
         internal float FadeTargetAlpha => _fadeTargetAlpha;
         internal float ScaleDownFactor => _scaleDownFactor;
@@ -225,6 +226,8 @@ namespace Com.Krackhet.Runtime.UI.Components
 
             if (HasInteractionFXType(ButtonInteractionFXType.Drop))
                 StartCoroutine(DropDownFX());
+
+            onPressed?.Invoke();
         }
 
         private void ResetInteractionFX()
@@ -240,6 +243,8 @@ namespace Com.Krackhet.Runtime.UI.Components
 
             if (HasInteractionFXType(ButtonInteractionFXType.Fade))
                 StartCoroutine(ResetFadeFX());
+
+            onReleased?.Invoke();
         }
 
         private IEnumerator HandleSubmit()
