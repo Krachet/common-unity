@@ -3,13 +3,13 @@ using UnityEngine.Playables;
 
 namespace Com.Krackhet.Runtime.Timeline
 {
-    public class SingleFramePlayableClip : PlayableAsset 
+    public class SingleFramePlayableClip<T> : PlayableAsset where T : SingleFramePlayableBehaviour, new()
     {
         public override double duration => 10.0 / 60.0;
 
         public override Playable CreatePlayable(PlayableGraph graph, GameObject owner)
         {
-            var playable = ScriptPlayable<SingleFramePlayableBehaviour>.Create(graph);
+            var playable = ScriptPlayable<T>.Create(graph);
             return playable;
         }
     }

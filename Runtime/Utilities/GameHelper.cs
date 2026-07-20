@@ -71,6 +71,74 @@ namespace Com.Krackhet.Runtime.Utilities
                 obj.transform.localScale = new Vector3(width, width / desiredRatio);
             }
         }
+
+        /// <summary>
+        /// Returns a world-space position along a LineRenderer based on a percentage
+        /// (0.0 to 1.0) of the total polyline length.
+        /// </summary>
+        public static Vector3 GetPositionOnLineRenderer(
+            this LineRenderer lineRenderer, float percentage)
+        {
+            if (lineRenderer == null)
+            {
+                Debug.LogError("[GameHelper] GetPositionOnLineRenderer: LineRenderer is null.");
+                return Vector3.zero;
+            }
+
+            percentage = Mathf.Clamp01(percentage);
+            int positionCount = lineRenderer.positionCount;
+            if (positionCount == 0) return Vector3.zero;
+            if (positionCount == 1)
+                return TransformPosition(lineRenderer, lineRenderer.GetPosition(0));
+
+            Vector3[] positions = new Vector3[positionCount];
+            lineRenderer.GetPositions(positions);
+
+            // Convert to world space when useWorldSpace is disabled
+            if (!lineRenderer.useWorldSpace)
+            {
+                Transform lrTransform = lineRenderer.transform;
+                for (int i = 0; i < positions.Length; i++)
+                    positions[i] = lrTransform.TransformPoint(positions[i]);
+            }
+
+            float totalLength = 0f;
+            float[] segmentLengths = new float[positionCount - 1];
+            for (int i = 0; i < positionCount - 1; i++)
+            {
+                segmentLengths[i] = Vector3.Distance(positions[i], positions[i + 1]);
+                totalLength += segmentLengths[i];
+            }
+
+            if (totalLength <= 0f)
+                return positions[0];
+
+            float targetDistance = percentage * totalLength;
+            float accumulated = 0f;
+
+            for (int i = 0; i < segmentLengths.Length; i++)
+            {
+                float segLen = segmentLengths[i];
+                if (targetDistance <= accumulated + segLen)
+                {
+                    float t = (targetDistance - accumulated) / segLen;
+                    return Vector3.Lerp(positions[i], positions[i + 1], t);
+                }
+                accumulated += segLen;
+            }
+
+            return positions[positionCount - 1];
+        }
+        #endregion
+
+        #region Private Methods
+        private static Vector3 TransformPosition(
+            LineRenderer lineRenderer, Vector3 localPosition)
+        {
+            return lineRenderer.useWorldSpace
+                ? localPosition
+                : lineRenderer.transform.TransformPoint(localPosition);
+        }
         #endregion
     }
 }

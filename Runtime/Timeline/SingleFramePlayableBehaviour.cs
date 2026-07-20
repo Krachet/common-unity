@@ -19,8 +19,6 @@ namespace Com.Krackhet.Runtime.Timeline
             OnFirstFramePlay();
         }
 
-        protected virtual void OnFirstFramePlay()
-        {
-        }
+        protected virtual void OnFirstFramePlay() { }
     }
 }
