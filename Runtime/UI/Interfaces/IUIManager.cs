@@ -3,10 +3,11 @@ using UnityEngine;
 
 namespace Com.Krackhet.Runtime.UI
 {
-    public interface IUIManager: IGameInternal
+    public interface IUIManager
     {
         Camera RenderCamera { get; }
         Canvas UICanvas { get; }
+        UIManagerStatus Status { get; }
 
         void Initialize();
         void RegisterLayer(IUILayer layer);

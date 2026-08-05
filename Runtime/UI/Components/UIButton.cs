@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using Com.Krackhet.Runtime.Audio;
 using Com.Krackhet.Runtime.Managers;
 using UnityEngine;
 using UnityEngine.Events;
@@ -256,7 +257,7 @@ namespace Com.Krackhet.Runtime.UI.Components
         private void Press()
         {
             onClick?.Invoke();
-            GameInternalManager.AudioManager?.PlayAudio(ButtonSfxName, 0);
+            GameInternalManager.GetManager<IAudioManager>()?.PlayAudio(ButtonSfxName, 0);
         }
         #endregion
 

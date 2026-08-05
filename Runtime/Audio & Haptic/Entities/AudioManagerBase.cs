@@ -5,7 +5,14 @@ using UnityEngine.Audio;
 
 namespace Com.Krackhet.Runtime.Audio
 {
-    public abstract class AudioManagerBase<T> : Singleton<T>, IAudioManager where T : AudioManagerBase<T> 
+    public enum AudioManagerStatus
+    {
+        NotInitialized,
+        Initializing,
+        Ready
+    }
+
+    public abstract class AudioManagerBase<T> : Singleton<T>, IAudioManager where T : AudioManagerBase<T>
     {
         #region Serialized Fields
         [SerializeField]
@@ -21,15 +28,20 @@ namespace Com.Krackhet.Runtime.Audio
         protected AudioConfig _audioConfig;
         #endregion
 
+        protected AudioManagerStatus _status;
         protected bool _isMusicEnabled;
         protected bool _isSoundEnabled;
+
+        public AudioManagerStatus Status => _status;
 
         protected override void Awake()
         {
             base.Awake();
-            GameInternalManager.RegisterAudioManager(this);
+            _status = AudioManagerStatus.Initializing;
+            GameInternalManager.RegisterManager(this);
             _musicAudioSource.outputAudioMixerGroup = _audioMixer.FindMatchingGroups("Music")[0];
             _sfxAudioSource.outputAudioMixerGroup = _audioMixer.FindMatchingGroups("Sound")[0];
+            _status = AudioManagerStatus.Ready;
         }
 
         public virtual void PlayAudio(AudioClip audioClip, int audioType, float volume = 1f)

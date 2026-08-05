@@ -6,13 +6,13 @@ namespace Com.Krackhet.Runtime.UI
     [CreateAssetMenu(fileName = "UIManagerConfiguration", menuName = "Krackhet/UI/UIManagerConfiguration")]
     public class BaseUIManagerConfiguration : ScriptableObject
     {
-        [HideInInspector] public List<BaseUILayer> layerConfigurations = new List<BaseUILayer>();
+        [HideInInspector] public List<UILayerBase> layerConfigurations = new List<UILayerBase>();
 
         public List<BaseUILayerGroupConfiguration> layerGroupConfigurations = new List<BaseUILayerGroupConfiguration>();
 
         public void Initialize()
         {
-            layerConfigurations = new List<BaseUILayer>();
+            layerConfigurations = new List<UILayerBase>();
 
             foreach (var groupConfig in layerGroupConfigurations)
             {
@@ -24,11 +24,11 @@ namespace Com.Krackhet.Runtime.UI
             }
         }
 
-        public TLayer GetLayerPrefab<TLayer>() where TLayer : BaseUILayer
+        public TLayer GetLayerPrefab<TLayer>() where TLayer : UILayerBase
         {
             for (int i = 0; i < layerConfigurations.Count; i++)
             {
-                BaseUILayer layerConfig = layerConfigurations[i];
+                UILayerBase layerConfig = layerConfigurations[i];
                 if (layerConfig is TLayer)
                 {
                     return layerConfig as TLayer;
@@ -44,6 +44,6 @@ namespace Com.Krackhet.Runtime.UI
     public class BaseUILayerGroupConfiguration
     {
         public int groupOrder;
-        public List<BaseUILayer> layerPrefab;
+        public List<UILayerBase> layerPrefab;
     }
 }

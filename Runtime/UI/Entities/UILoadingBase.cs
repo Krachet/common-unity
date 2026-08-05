@@ -11,7 +11,7 @@ using UnityEngine;
 namespace Com.Krackhet.Runtime.UI
 {
 #if CYSHARP_UNITASK
-    public abstract class UILoadingBase : BaseUILayer 
+    public abstract class UILoadingBase : UILayerBase 
     {
         public float Process { get; private set; }
 

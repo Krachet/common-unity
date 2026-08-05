@@ -1,9 +1,10 @@
 using System;
+using Com.Krackhet.Runtime.UI.Utilities;
 using UnityEngine;
 
 namespace Com.Krackhet.Runtime.UI
 {
-    public class BaseUILayer : MonoBehaviour, IUILayer
+    public class UILayerBase : MonoBehaviour, IUILayer
     {
         #region Serialized Fields
         [SerializeField]
@@ -22,11 +23,18 @@ namespace Com.Krackhet.Runtime.UI
         public int LayerIndex => layerIndex;
         #endregion
 
-        #region Private Methods
-        private void CacheComponents()
+        #region Protected Methods
+        protected virtual void CacheComponents()
         {
             if (layerContent == null)
                 layerContent = layerContent.GetChild(0).GetComponent<RectTransform>();
+
+            if (layerContent.GetComponent<UISafeArea>() == null)
+            {
+                UISafeArea safeArea = layerContent.gameObject.AddComponent<UISafeArea>();
+                safeArea.adjustAnchorMax = true;
+                safeArea.adjustAnchorMin = true;
+            }
         }
         #endregion
 

@@ -10,28 +10,27 @@ namespace Com.Krackhet.Runtime.Managers
 
         public static IUIManager UIManager { get; private set; }
 
-        public static void RegisterAudioManager(IAudioManager audioManager)
+        internal static void RegisterManager<T>(T manager) where T : class
         {
-            if (AudioManager == null)
+            switch (manager)
             {
-                AudioManager = audioManager;
-            }
-            else
-            {
-                Debug.LogWarning("AudioManager is already registered. Ignoring new registration.");
+                case IAudioManager audioManager:
+                    AudioManager = audioManager;
+                    break;
+                case IUIManager uiManager:
+                    UIManager = uiManager;
+                    break;
+                default:
+                    Debug.LogWarning($"Unknown manager type: {typeof(T).Name}. Registration ignored.");
+                    break;
             }
         }
 
-        public static void RegisterUIManager(IUIManager uiManager)
+        internal static T GetManager<T>() where T : class
         {
-            if (UIManager == null)
-            {
-                UIManager = uiManager;
-            }
-            else
-            {
-                Debug.LogWarning("UIManager is already registered. Ignoring new registration.");
-            }
+            if (AudioManager        is T audioManager) return audioManager;
+            if (UIManager           is T uiManager) return uiManager;
+            return null;
         }
     }
 }

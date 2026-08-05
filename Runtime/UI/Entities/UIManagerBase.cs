@@ -9,46 +9,58 @@ using UnityEngine.UI;
 
 namespace Com.Krackhet.Runtime.UI
 {
-    public abstract class BaseUIManager<T> : Singleton<T>, IUIManager where T : BaseUIManager<T>
+    public enum UIManagerStatus
+    {
+        NotInitialized,
+        Initializing,
+        Ready
+    }
+
+    public abstract class UIManagerBase<T> : Singleton<T>, IUIManager where T : UIManagerBase<T>
     {
         #region Constants
         private const int GROUP_ORDER_SPACING = 10;
         #endregion
 
         #region Protected Fields
-        protected List<IUILayer> activeLayers { get; set; }
+        protected UIManagerStatus _status { get; set; }
 
-        protected Dictionary<Type, IUILayer> uiLayers { get; set; }
+        protected List<IUILayer> _activeLayers { get; set; }
 
-        protected Dictionary<int, Transform> uiLayerGroups { get; set; }
+        protected Dictionary<Type, IUILayer> _uiLayers { get; set; }
+
+        protected Dictionary<int, Transform> _uiLayerGroups { get; set; }
         #endregion
 
         #region Serialized Fields
         [SerializeField]
-        protected Canvas uiCanvas;
+        protected Canvas _uiCanvas;
 
         [SerializeField]
-        protected Camera renderCamera;
+        protected Camera _renderCamera;
 
         [SerializeField]
-        protected EventSystem eventSystem;
+        protected EventSystem _eventSystem;
 
         [SerializeField]
-        protected BaseUIManagerConfiguration configuration;
+        protected BaseUIManagerConfiguration _configuration;
         #endregion
 
         #region Public Properties
-        public Camera RenderCamera => renderCamera;
+        public Camera RenderCamera => _renderCamera;
 
-        public Canvas UICanvas => uiCanvas;
+        public Canvas UICanvas => _uiCanvas;
+
+        public UIManagerStatus Status => _status;
         #endregion
 
         #region Unity Methods
         protected override void Awake()
         {
             base.Awake();
-            GameInternalManager.RegisterUIManager(this);
+            GameInternalManager.RegisterManager(this);
             CacheComponents();
+            _status = UIManagerStatus.NotInitialized;
         }
 
         void OnValidate()
@@ -60,10 +72,12 @@ namespace Com.Krackhet.Runtime.UI
         #region Public Methods 
         public virtual void Initialize()
         {
-            activeLayers = new List<IUILayer>();
-            uiLayers = new Dictionary<Type, IUILayer>();
-            uiLayerGroups = new Dictionary<int, Transform>();
-            configuration.Initialize();
+            _status = UIManagerStatus.Initializing;
+            _activeLayers = new List<IUILayer>();
+            _uiLayers = new Dictionary<Type, IUILayer>();
+            _uiLayerGroups = new Dictionary<int, Transform>();
+            _configuration.Initialize();
+            _status = UIManagerStatus.Ready;
         }
 
         public void RegisterLayer(IUILayer layer)
@@ -75,14 +89,14 @@ namespace Com.Krackhet.Runtime.UI
             }
 
             Type layerType = layer.GetType();
-            if (uiLayers.TryGetValue(layerType, out IUILayer existingLayer))
+            if (_uiLayers.TryGetValue(layerType, out IUILayer existingLayer))
             {
                 Debug.LogWarning($"UI Layer of type {layerType} is already registered. Replacing existing layer.");
-                uiLayers[layerType] = layer;
+                _uiLayers[layerType] = layer;
             }
             else
             {
-                uiLayers[layerType] = layer;
+                _uiLayers[layerType] = layer;
             }
         }
 
@@ -95,9 +109,9 @@ namespace Com.Krackhet.Runtime.UI
             }
 
             Type layerType = layer.GetType();
-            if (uiLayers.ContainsKey(layerType))
+            if (_uiLayers.ContainsKey(layerType))
             {
-                uiLayers.Remove(layerType);
+                _uiLayers.Remove(layerType);
             }
             else
             {
@@ -113,9 +127,9 @@ namespace Com.Krackhet.Runtime.UI
                 return;
             }
 
-            if (!activeLayers.Contains(layer))
+            if (!_activeLayers.Contains(layer))
             {
-                activeLayers.Add(layer);
+                _activeLayers.Add(layer);
             }
         }
 
@@ -127,23 +141,23 @@ namespace Com.Krackhet.Runtime.UI
                 return;
             }
 
-            if (activeLayers.Contains(layer as BaseUILayer))
+            if (_activeLayers.Contains(layer as UILayerBase))
             {
-                activeLayers.Remove(layer as BaseUILayer);
+                _activeLayers.Remove(layer as UILayerBase);
             }
         }   
 
-        public Layer GetUILayer<Layer>() where Layer : BaseUILayer
+        public Layer GetUILayer<Layer>() where Layer : UILayerBase
         {
             Type layerType = typeof(Layer);
-            if (uiLayers.TryGetValue(layerType, out IUILayer layer))
+            if (_uiLayers.TryGetValue(layerType, out IUILayer layer))
                 return layer as Layer;
 
-            Layer layerPrefab = configuration.GetLayerPrefab<Layer>();
+            Layer layerPrefab = _configuration.GetLayerPrefab<Layer>();
             int layerIndex = layerPrefab != null ? layerPrefab.LayerIndex : -1;
             Layer newLayer = SpawnUILayer(layerPrefab, layerIndex);
 
-            uiLayers[layerType] = newLayer;
+            _uiLayers[layerType] = newLayer;
             if (newLayer != null)
             {
                 newLayer.transform.SetParent(GetGroup(layerIndex), false);
@@ -156,29 +170,29 @@ namespace Com.Krackhet.Runtime.UI
         #region Private Methods
         private void CacheComponents()
         {
-            if (uiCanvas == null)
+            if (_uiCanvas == null)
             {
-                uiCanvas = FindFirstObjectByType<Canvas>();
-                if (uiCanvas == null)
-                    uiCanvas = new GameObject("UICanvas").AddComponent<Canvas>();
+                _uiCanvas = FindFirstObjectByType<Canvas>();
+                if (_uiCanvas == null)
+                    _uiCanvas = new GameObject("UICanvas").AddComponent<Canvas>();
             }
 
-            if (renderCamera == null)
+            if (_renderCamera == null)
             {
-                renderCamera = Camera.main;
-                if (renderCamera == null)
-                    renderCamera = new GameObject("UICamera").AddComponent<Camera>();
+                _renderCamera = Camera.main;
+                if (_renderCamera == null)
+                    _renderCamera = new GameObject("UICamera").AddComponent<Camera>();
             }
 
-            if (eventSystem == null)
+            if (_eventSystem == null)
             {
-                eventSystem = FindFirstObjectByType<EventSystem>();
-                if (eventSystem == null)
-                    eventSystem = new GameObject("EventSystem").AddComponent<EventSystem>();
+                _eventSystem = FindFirstObjectByType<EventSystem>();
+                if (_eventSystem == null)
+                    _eventSystem = new GameObject("EventSystem").AddComponent<EventSystem>();
             }
         }
 
-        private Layer SpawnUILayer<Layer>(Layer uiLayer, int layerIndex) where Layer : BaseUILayer
+        private Layer SpawnUILayer<Layer>(Layer uiLayer, int layerIndex) where Layer : UILayerBase
         {
             if (uiLayer == null)
             {
@@ -186,33 +200,33 @@ namespace Com.Krackhet.Runtime.UI
                 return null;
             }
 
-            Layer layerInstance = Instantiate(uiLayer, uiCanvas.transform);
+            Layer layerInstance = Instantiate(uiLayer, _uiCanvas.transform);
             layerInstance.Init(this, layerIndex);
-            uiLayers[typeof(Layer)] = layerInstance;
+            _uiLayers[typeof(Layer)] = layerInstance;
             return layerInstance;
         }
 
         private Transform GetGroup(int order)
         {
-            if (!uiLayerGroups.ContainsKey(order))
+            if (!_uiLayerGroups.ContainsKey(order))
             {
                 GameObject group = new(StringHelper.CreateText("Group:[{0}]", order));
                 RectTransform rectTransform = group.TryAddComponent<RectTransform>();
-                rectTransform.SetParent(uiCanvas.transform, false);
+                rectTransform.SetParent(_uiCanvas.transform, false);
                 rectTransform.Reset();
                 rectTransform.Stretch(0);
                 rectTransform.SetSiblingIndex(order);
-                uiLayerGroups.Add(order, rectTransform);
-                foreach (var item in uiLayerGroups) item.Value.SetSiblingIndex(item.Key);
+                _uiLayerGroups.Add(order, rectTransform);
+                foreach (var item in _uiLayerGroups) item.Value.SetSiblingIndex(item.Key);
                 Canvas overrideCanvas = group.AddComponent<Canvas>();
                 group.AddComponent<GraphicRaycaster>();
-                group.layer = uiCanvas.gameObject.layer;
+                group.layer = _uiCanvas.gameObject.layer;
                 overrideCanvas.overrideSorting = true;
-                overrideCanvas.sortingLayerName = uiCanvas.sortingLayerName;
+                overrideCanvas.sortingLayerName = _uiCanvas.sortingLayerName;
                 overrideCanvas.sortingOrder = Mathf.Max(1, order * GROUP_ORDER_SPACING);
                 overrideCanvas.additionalShaderChannels = AdditionalCanvasShaderChannels.TexCoord1;
             }
-            return uiLayerGroups[order];
+            return _uiLayerGroups[order];
         }
 
         #endregion

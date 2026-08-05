@@ -4,9 +4,15 @@ namespace Com.Krackhet.Runtime.UI.Utilities
 {
     public class UISafeArea : MonoBehaviour
     {
-        [SerializeField] private bool adjustAnchorMin;
-        [SerializeField] private bool adjustAnchorMax;
+        public bool adjustAnchorMin;
+        public bool adjustAnchorMax;
+
         private void Awake()
+        {
+            SetDeviceSafeArea();
+        }
+
+        private void SetDeviceSafeArea()
         {
             Canvas.ForceUpdateCanvases();
             Rect safeAreaRect = Screen.safeArea;

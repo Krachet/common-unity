@@ -469,7 +469,7 @@ namespace Com.Krackhet.Editor.UI
             {
                 if (group.layerPrefab == null) continue;
 
-                foreach (BaseUILayer layer in group.layerPrefab)
+                foreach (UILayerBase layer in group.layerPrefab)
                 {
                     if (layer == null) continue;
 
@@ -494,8 +494,8 @@ namespace Com.Krackhet.Editor.UI
 
         private static void AutoSortLayersIntoGroups()
         {
-            Dictionary<int, List<BaseUILayer>> groupedLayers =
-                new Dictionary<int, List<BaseUILayer>>();
+            Dictionary<int, List<UILayerBase>> groupedLayers =
+                new Dictionary<int, List<UILayerBase>>();
 
             string scanFilter = string.IsNullOrWhiteSpace(_scanFolder)
                 ? "Assets/" : _scanFolder.TrimEnd('/') + "/";
@@ -510,12 +510,12 @@ namespace Com.Krackhet.Editor.UI
                 GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
                 if (prefab == null) continue;
 
-                BaseUILayer layer = prefab.GetComponent<BaseUILayer>();
+                UILayerBase layer = prefab.GetComponent<UILayerBase>();
                 if (layer == null) continue;
 
                 int index = layer.LayerIndex;
                 if (!groupedLayers.ContainsKey(index))
-                    groupedLayers[index] = new List<BaseUILayer>();
+                    groupedLayers[index] = new List<UILayerBase>();
                 groupedLayers[index].Add(layer);
             }
 
@@ -535,7 +535,7 @@ namespace Com.Krackhet.Editor.UI
             groupsProp.ClearArray();
 
             int groupIndex = 0;
-            foreach (KeyValuePair<int, List<BaseUILayer>> kvp in groupedLayers)
+            foreach (KeyValuePair<int, List<UILayerBase>> kvp in groupedLayers)
             {
                 groupsProp.arraySize = groupIndex + 1;
                 SerializedProperty element = groupsProp.GetArrayElementAtIndex(groupIndex);
