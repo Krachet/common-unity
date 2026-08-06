@@ -72,6 +72,44 @@ namespace Com.Krackhet.Runtime.Utilities
             }
         }
 
+        public static void FitObjectToRect(this GameObject obj, 
+            Camera camera,
+            Rect rectBound, 
+            out float heightDifference,
+            out float widthDifference,
+            float widthClamp = -1f, 
+            float heightClamp = -1f) 
+        {
+            heightDifference = 1;
+            widthDifference = 1;
+            obj.transform.position = camera.ViewportToWorldPoint(rectBound.center);
+            float cameraWidth = rectBound.width;
+            float cameraHeight = rectBound.height;
+            Vector3 bottomLeft = camera.ViewportToWorldPoint(Vector3.zero);
+            Vector3 topRight = camera.ViewportToWorldPoint(new Vector3(cameraWidth, cameraHeight));
+            Vector3 screenSize = topRight - bottomLeft;
+            Vector3 screenSizeClamped = new Vector3(
+                widthClamp > 0 ? Mathf.Min(screenSize.x, widthClamp) : screenSize.x,
+                heightClamp > 0 ? Mathf.Min(screenSize.y, heightClamp) : screenSize.y,
+                1f
+            );
+            float screenRatio = screenSizeClamped.x / screenSizeClamped.y;
+            float desiredRatio = obj.transform.localScale.x / obj.transform.localScale.y;
+
+            if (screenRatio > desiredRatio)
+            {
+                float height = screenSize.y;
+                widthDifference = height * desiredRatio / screenSize.x;
+                obj.transform.localScale = new Vector3(height * desiredRatio, height);
+            }
+            else
+            {
+                float width = screenSize.x;
+                heightDifference = width / desiredRatio / screenSize.y;
+                obj.transform.localScale = new Vector3(width, width / desiredRatio);
+            }
+        }
+
         /// <summary>
         /// Returns a world-space position along a LineRenderer based on a percentage
         /// (0.0 to 1.0) of the total polyline length.
