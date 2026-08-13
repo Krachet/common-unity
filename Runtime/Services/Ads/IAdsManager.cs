@@ -7,8 +7,8 @@ namespace Com.Krackhet.Runtime.Services.Ads
         string DeviceAdsId { get; }
         AdsManagerStatus Status { get; }
 
-        void ShowInterstitialAds(Action<bool> onShown);
-        void ShowRewardedAds(Action<bool> onShown);
+        void ShowInterstitialAds(Action<bool> onShown, string placement);
+        void ShowRewardAds(Action<bool> onShown, string placement);
         void ShowBanner();
         void HideBanner();
     }

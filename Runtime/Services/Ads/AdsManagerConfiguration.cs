@@ -1,16 +1,14 @@
+using System;
 using UnityEngine;
 
-public class AdsManagerConfiguration : MonoBehaviour
+namespace Com.Krackhet.Runtime.Services.Ads
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
+    [CreateAssetMenu(
+        fileName = "ApplovinMaxAdsSeriviceProvider", 
+        menuName = "Krackhet/Services/Ads/AdsConfiguration")]
 
-    // Update is called once per frame
-    void Update()
+    public class AdsManagerConfiguration : ScriptableObject
     {
-        
+        public float interstitialAdsInterval;
     }
 }

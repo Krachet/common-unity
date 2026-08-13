@@ -1,16 +1,14 @@
+using System;
 using UnityEngine;
 
-public class IAdsServiceProvider : MonoBehaviour
+namespace Com.Krackhet.Runtime.Services.Ads
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    public interface IAdsServiceProvider
     {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
+        void ShowInterstitialAds(Action<bool> onShown);
+        void ShowRewardAds(Action<bool> onShown);
+        void ShowBanner();
+        void HideBanner();
+        void ShowAppOpen();
     }
 }
