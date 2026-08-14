@@ -10,6 +10,10 @@ namespace Com.Krackhet.Runtime.Services.Ads
         [SerializeField]
         private List<ApplovinMaxAdsUnitID> _adsUnitIds;
 
+        void Awake()
+        {
+        }
+
         public void HideBanner()
         {
             throw new NotImplementedException();
@@ -17,7 +21,7 @@ namespace Com.Krackhet.Runtime.Services.Ads
 
         public void ShowAppOpen()
         {
-            throw new NotImplementedException();
+
         }
 
         public void ShowBanner()
@@ -33,6 +37,23 @@ namespace Com.Krackhet.Runtime.Services.Ads
         public void ShowRewardAds(Action<bool> onShown)
         {
             throw new NotImplementedException();
+        }
+
+        private string TryGetStringByAdsType(AdsType type)
+        {
+            switch (type)
+            {
+                case AdsType.Banner:
+                    return _adsUnitIds.Find(unitId => unitId.adsType == AdsType.Banner).unitId;
+                case AdsType.Interstitial:
+                    return _adsUnitIds.Find(unitId => unitId.adsType == AdsType.Interstitial).unitId;
+                case AdsType.Reward:
+                    return _adsUnitIds.Find(unitId => unitId.adsType == AdsType.Reward).unitId;
+                case AdsType.AppOpen:
+                    return _adsUnitIds.Find(unitId => unitId.adsType == AdsType.AppOpen).unitId;
+                default:
+                    return string.Empty;
+            }
         }
     }
 }

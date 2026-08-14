@@ -40,6 +40,9 @@ namespace Com.Krackhet.Runtime.Services.Ads
         #region Serialize Fields
         [SerializeField]
         private ScriptableObject _adsServiceProvider;
+
+        [SerializeField]
+        private AdsManagerConfiguration _adsConfiguration;
         #endregion
 
         #region Unity Methods
@@ -77,10 +80,12 @@ namespace Com.Krackhet.Runtime.Services.Ads
         #region Service Methods
         public void HideBanner()
         {
+            _currentProvider.HideBanner();
         }
 
         public void ShowBanner()
         {
+            _currentProvider.ShowBanner();
         }
 
         public void ShowInterstitialAds(Action<bool> callback, string placement)
