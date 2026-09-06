@@ -1,7 +1,11 @@
 using System;
 using Com.Krackhet.Runtime.Pattern.Singleton;
-using Cysharp.Threading.Tasks;
 using UnityEngine;
+#if CYSHARP_UNITY
+using Cysharp.Threading.Tasks;
+#else
+using System.Threading.Tasks;
+#endif
 
 namespace Com.Krackhet.Runtime.TimeKeeper
 {
@@ -61,7 +65,10 @@ namespace Com.Krackhet.Runtime.TimeKeeper
         #endregion
 
         #region Public Methods
+#if CYSHARP_UNITY
         public async UniTask<bool> InitializeAsync(string lastKnownDate)
+#endif
+        public async Task<bool> InitializeAsync(string lastKnownDate)
         {
             _lastKnownDate = string.IsNullOrEmpty(lastKnownDate)
                 ? string.Empty
@@ -73,7 +80,11 @@ namespace Com.Krackhet.Runtime.TimeKeeper
 
             _initialized = true;
 
+#if CYSHARP_UNITY
             await UniTask.Yield();
+#else
+            await Task.Yield();
+#endif
 
             if (IsNewDay)
             {
