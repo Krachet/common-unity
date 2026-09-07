@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Com.Krackhet.Runtime.UI
 {
-    public class UILayerBase : MonoBehaviour, IUILayer
+    public abstract class UILayerBase : MonoBehaviour, IUILayer
     {
         #region Serialized Fields
         [SerializeField]
