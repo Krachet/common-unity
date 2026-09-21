@@ -169,8 +169,12 @@ namespace Com.Krackhet.Runtime.UI.Components
         #endregion
 
         #region Editor Helpers
+#if UNITY_EDITOR
+        [ContextMenu("Contain target graphic")]
+#endif
 #if ODIN_INSPECTOR
         [Sirenix.OdinInspector.Button("Contain target graphic")]
+#endif
         private void ContainTargetGraphic()
         {
             if (_targetGraphic == null)
@@ -185,7 +189,12 @@ namespace Com.Krackhet.Runtime.UI.Components
             _targetGraphic.rectTransform.anchoredPosition = Vector2.zero;
         }
 
+#if UNITY_EDITOR
+        [ContextMenu("Fit target graphic")]
+#endif
+#if ODIN_INSPECTOR
         [Sirenix.OdinInspector.Button("Fit target graphic")]
+#endif
         private void FitTargetGraphic()
         {
             if (_targetGraphic == null)
@@ -198,7 +207,6 @@ namespace Com.Krackhet.Runtime.UI.Components
             _targetGraphic.rectTransform.sizeDelta = buttonRect.sizeDelta;
             _targetGraphic.rectTransform.anchoredPosition = Vector2.zero;
         }
-#endif
         #endregion
 
         #region FX Parameters (for external readers)
