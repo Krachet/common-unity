@@ -52,7 +52,7 @@ namespace Com.Krackhet.Runtime.UI
             loadingCts = null;
         }
 
-        private void OnDestroy()
+        protected override void OnDestroy()
         {
             loadingCts?.Cancel();
             loadingCts?.Dispose();
