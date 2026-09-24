@@ -50,6 +50,7 @@ public static class GameEvents
     public static event Action<bool> OnMusicToggle;
     public static event Action<bool> OnSoundToggle;
     public static event Action<bool> OnVibrationToggle;
+    public static event Action<int> OnControlOptionChange;
 
     public static void RaiseMusicToggle(bool enabled)
     {
@@ -64,6 +65,11 @@ public static class GameEvents
     public static void RaiseVibrationToggle(bool enabled)
     {
         OnVibrationToggle?.Invoke(enabled);
+    }
+
+    public static void RaiseChangeControl(int type)
+    {
+        OnControlOptionChange?.Invoke(type);
     }
     #endregion
 
