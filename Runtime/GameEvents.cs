@@ -52,11 +52,14 @@ public static class GameEvents
     public static event Action<bool> OnVibrationToggle;
     public static event Action<int> OnControlOptionChange;
 
+    public static event Action<int> OnCurrencyChanged; 
+    public static event Func<int, bool> OnSpendCurrency;
+
     public static void RaiseMusicToggle(bool enabled)
     {
         OnMusicToggle?.Invoke(enabled);
     }
-    
+
     public static void RaiseSoundToggle(bool enabled)
     {
         OnSoundToggle?.Invoke(enabled);
@@ -71,27 +74,19 @@ public static class GameEvents
     {
         OnControlOptionChange?.Invoke(type);
     }
+
+    public static bool RaiseSpendCurrency(int amount)
+    {
+        return OnSpendCurrency.Invoke(amount);
+    }
+
+    public static void RaiseCurrencyChanged(int amount)
+    {
+        OnCurrencyChanged?.Invoke(amount);
+    }
     #endregion
 
     #region INTERACTIONS
-    public static event Action<bool> OnToggleInteraction;
-    public static event Action<string> OnShowMessage;
-    public static event Action OnHideMessage;
-
-    public static void RaiseToggleInteraction(bool enabled)
-    {
-        OnToggleInteraction?.Invoke(enabled);
-    }
-
-    public static void RaiseShowMessage(string message)
-    {
-        OnShowMessage?.Invoke(message);
-    }
-
-    public static void RaiseHideMessage()
-    {
-        OnHideMessage?.Invoke();
-    }
     #endregion
 
     #region Monetization
