@@ -53,7 +53,6 @@ public static class GameEvents
     public static event Action<int> OnControlOptionChange;
 
     public static event Action<int> OnCurrencyChanged; 
-    public static event Func<int, bool> OnSpendCurrency;
 
     public static void RaiseMusicToggle(bool enabled)
     {
@@ -73,11 +72,6 @@ public static class GameEvents
     public static void RaiseChangeControl(int type)
     {
         OnControlOptionChange?.Invoke(type);
-    }
-
-    public static bool RaiseSpendCurrency(int amount)
-    {
-        return OnSpendCurrency.Invoke(amount);
     }
 
     public static void RaiseCurrencyChanged(int amount)
