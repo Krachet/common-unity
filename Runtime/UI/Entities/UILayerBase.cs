@@ -21,6 +21,8 @@ namespace Com.Krackhet.Runtime.UI
 
         #region Public Properties
         public int LayerIndex => layerIndex;
+
+        public bool isShown { get; private set; }
         #endregion
 
         #region Protected Methods
@@ -52,6 +54,7 @@ namespace Com.Krackhet.Runtime.UI
             if (uiManager != null)
                 uiManager.AddLayer(this);
 
+            isShown = true;
             layerContent.gameObject.SetActive(true);
         }
 
@@ -66,6 +69,7 @@ namespace Com.Krackhet.Runtime.UI
             if (uiManager != null)
                 uiManager.RemoveLayer(this);
 
+            isShown = false;
             onHideCallback?.Invoke();
             layerContent.gameObject.SetActive(false);
         }
