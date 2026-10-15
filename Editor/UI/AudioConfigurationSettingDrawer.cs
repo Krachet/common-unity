@@ -27,7 +27,7 @@ namespace Com.Krackhet.Editor.Audio
 
         private static void DrawSettingsGUI(string searchContext)
         {
-            AudioConfig config = LoadConfig();
+            Runtime.Audio.AudioConfiguration config = LoadConfig();
             if (config == null)
             {
                 EditorGUILayout.HelpBox(
@@ -51,7 +51,7 @@ namespace Com.Krackhet.Editor.Audio
 
             using (new EditorGUI.DisabledScope(true))
             {
-                EditorGUILayout.ObjectField("Config Asset", config, typeof(AudioConfig), false);
+                EditorGUILayout.ObjectField("Config Asset", config, typeof(Runtime.Audio.AudioConfiguration), false);
             }
 
             EditorGUILayout.Space();
@@ -69,9 +69,9 @@ namespace Com.Krackhet.Editor.Audio
             }
         }
 
-        private static AudioConfig LoadConfig()
+        private static Runtime.Audio.AudioConfiguration LoadConfig()
         {
-            return AssetDatabase.LoadAssetAtPath<AudioConfig>(ConfigAssetPath);
+            return AssetDatabase.LoadAssetAtPath<Runtime.Audio.AudioConfiguration>(ConfigAssetPath);
         }
     }
 }

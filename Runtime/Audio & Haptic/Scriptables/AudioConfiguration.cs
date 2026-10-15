@@ -5,7 +5,7 @@ using UnityEngine;
 namespace Com.Krackhet.Runtime.Audio
 {
     [CreateAssetMenu(fileName = "AudioConfiguration", menuName = "Krackhet/Audio/AudioConfiguration")]
-    public class AudioConfig : ScriptableObject
+    public class AudioConfiguration : ScriptableObject
     {
         public List<AudioClipInfo> AudioClips;
 

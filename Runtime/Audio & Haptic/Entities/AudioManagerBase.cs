@@ -25,7 +25,7 @@ namespace Com.Krackhet.Runtime.Audio
         protected AudioSource _sfxAudioSource;
 
         [SerializeField]
-        protected AudioConfig _audioConfig;
+        protected AudioConfiguration _audioConfig;
         #endregion
 
         protected AudioManagerStatus _status;
