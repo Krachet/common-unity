@@ -5,7 +5,15 @@ namespace Com.Krackhet.Runtime.Haptic
 {
     public abstract class HapticManagerBase<T> : Singleton<T>, IHapticManager where T : HapticManagerBase<T>
     {
-        private IVibrateController _vibrateController;
+        protected IVibrateController _vibrateController;
+
+        protected bool _isVibrateEnabled;
+
+        public bool IsVibrateEnabled
+        {
+            get => _isVibrateEnabled;
+            set => _isVibrateEnabled = value;
+        }
 
         protected override void Awake()
         {
@@ -15,7 +23,7 @@ namespace Com.Krackhet.Runtime.Haptic
 #endif
         }
 
-        public void PlayVibrate(VibrationPresetType presetType)
+        public virtual void PlayVibrate(VibrationPresetType presetType)
         {
             if (_vibrateController != null)
             {
