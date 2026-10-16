@@ -269,7 +269,7 @@ namespace Com.Krackhet.Runtime.UI.Components
         {
             onClick?.Invoke();
             GameInternalManager.GetManager<IAudioManager>()?.PlayAudio(ButtonSfxName, 0);
-            GameInternalManager.GetManager<IHapticManager>()?.PlayVibrate(VibrationPresetType.Button);
+            // GameInternalManager.GetManager<IHapticManager>()?.PlayVibrate(VibrationPresetType.Button);
         }
         #endregion
 

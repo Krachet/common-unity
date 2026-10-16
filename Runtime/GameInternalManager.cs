@@ -36,6 +36,7 @@ namespace Com.Krackhet.Runtime.Managers
         {
             if (AudioManager is T audioManager) return audioManager;
             if (UIManager is T uiManager) return uiManager;
+            if (HapticManager is T hapticManager) return hapticManager;
             return null;
         }
     }
