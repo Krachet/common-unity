@@ -1,4 +1,5 @@
 using Com.Krackhet.Runtime.Haptic.Vibrate;
+using Com.Krackhet.Runtime.Managers;
 using Com.Krackhet.Runtime.Pattern.Singleton;
 
 namespace Com.Krackhet.Runtime.Haptic
@@ -21,6 +22,8 @@ namespace Com.Krackhet.Runtime.Haptic
 #if MOREMOUNTAINS_NICEVIBRATIONS_INSTALLED
             _vibrateController = new FeelVibrateController();
 #endif
+
+            GameInternalManager.RegisterManager(this);
         }
 
         public virtual void PlayVibrate(VibrationPresetType presetType)
