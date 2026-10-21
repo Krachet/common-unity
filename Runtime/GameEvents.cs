@@ -1,5 +1,4 @@
 using System;
-using WA.Runtime.Levels;
 
 public static class GameEvents
 {
@@ -15,34 +14,6 @@ public static class GameEvents
     public static void RaiseNewWeek()
     {
         OnNewWeek?.Invoke();
-    }
-    #endregion
-
-    #region LEVELS
-    public static event Action<int> OnLevelStart;
-    public static event Action<int, LevelResult> OnLevelEnd;
-    public static event Action<bool> OnLevelPause;
-    public static event Action<int> OnLevelResume;
-    public static event Action<int> OnLevelUnlocked;
-
-    public static void RaiseLevelStart(int levelId)
-    {
-        OnLevelStart?.Invoke(levelId);
-    }
-
-    public static void RaiseLevelEnd(int levelId, LevelResult result)
-    {
-        OnLevelEnd?.Invoke(levelId, result);
-    }
-
-    public static void RaiseLevelPause(bool isPaused)
-    {
-        OnLevelPause?.Invoke(isPaused);
-    }
-
-    public static void RaiseLevelUnlocked(int levelId)
-    {
-        OnLevelUnlocked?.Invoke(levelId);
     }
     #endregion
 
