@@ -22,6 +22,9 @@ namespace Com.Krackhet.Runtime.UI.Components
 
         #region Serialized Fields
         [SerializeField]
+        private bool _muteSFX;
+
+        [SerializeField]
         private Graphic _targetGraphic;
 
         [SerializeField]
@@ -59,7 +62,7 @@ namespace Com.Krackhet.Runtime.UI.Components
         #region Private Fields
         private Coroutine _submitCoroutine;
         private bool _isPressed;
-        private const string ButtonSfxName = "UI-sfx";
+        private const string ButtonSfxName = "Button";
         #endregion
 
         #region Unity Callbacks
@@ -268,7 +271,7 @@ namespace Com.Krackhet.Runtime.UI.Components
         private void Press()
         {
             onClick?.Invoke();
-            GameInternalManager.GetManager<IAudioManager>()?.PlayAudio(ButtonSfxName, 0);
+            if (!_muteSFX) GameInternalManager.GetManager<IAudioManager>()?.PlayAudio(ButtonSfxName, 1);
             // GameInternalManager.GetManager<IHapticManager>()?.PlayVibrate(VibrationPresetType.Button);
         }
         #endregion

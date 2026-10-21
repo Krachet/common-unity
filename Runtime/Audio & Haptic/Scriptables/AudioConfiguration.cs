@@ -11,7 +11,14 @@ namespace Com.Krackhet.Runtime.Audio
 
         public AudioClip GetAudioClip(string clipName, int clipType)
         {
-            var audioClipInfo = AudioClips.Find(info => info.ClipType == clipType && info.Clips.Exists(clip => clip.name == clipName));
+            return GetAudioClip(clipName, (AudioClipType)clipType);
+        }
+
+        public AudioClip GetAudioClip(string clipName, AudioClipType type)
+        {
+            var audioClipInfo = AudioClips.Find(info => 
+                info.ClipType == type && info.Clips.Exists(clip => clip.name == clipName));
+
             if (audioClipInfo != null)
             {
                 return audioClipInfo.Clips.Find(clip => clip.name == clipName);
@@ -23,7 +30,13 @@ namespace Com.Krackhet.Runtime.Audio
     [Serializable]
     public class AudioClipInfo
     {
-        public int ClipType; // 0 for SFX, 1 for Music, etc.
+        public AudioClipType ClipType; // 0 for SFX, 1 for Music, etc.
         public List<AudioClip> Clips;
+    }
+
+    public enum AudioClipType
+    {
+        Music,
+        SoundFX
     }
 }

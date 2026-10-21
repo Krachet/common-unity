@@ -38,26 +38,41 @@ namespace Com.Krackhet.Runtime.Audio
         {
             base.Awake();
             _status = AudioManagerStatus.Initializing;
-            GameInternalManager.RegisterManager(this);
             _musicAudioSource.outputAudioMixerGroup = _audioMixer.FindMatchingGroups("Music")[0];
             _sfxAudioSource.outputAudioMixerGroup = _audioMixer.FindMatchingGroups("Sound")[0];
             _status = AudioManagerStatus.Ready;
+
+            GameInternalManager.RegisterManager(this);
         }
 
-        public virtual void PlayAudio(AudioClip audioClip, int audioType, float volume = 1f)
+        public virtual void PlayAudio(AudioClip audioClip, AudioClipType audioType, float volume = 1f)
         {
             switch (audioType)
             {
-                case 0: // Sound
+                case AudioClipType.SoundFX: // Sound
                     _sfxAudioSource.PlayOneShot(audioClip, volume);
                     break;
-                case 1: // Music
+                case AudioClipType.Music: // Music
                     _musicAudioSource.clip = audioClip;
                     _musicAudioSource.volume = volume;
                     _musicAudioSource.loop = true;
                     _musicAudioSource.Play();
                     break;
             }
+        }
+
+        public virtual void PlayAudio(string audioName, AudioClipType audioType, float volume = 1f)
+        {
+            var audioClip = GetAudioClipInfo(audioName, audioType);
+            if (audioClip != null)
+            {
+                PlayAudio(audioClip, audioType, volume);
+            }
+        }
+
+        public virtual void PlayAudio(AudioClip audioClip, int audioType, float volume = 1f)
+        {
+            PlayAudio(audioClip, (AudioClipType) audioType, volume);
         }
 
         public virtual void PlayAudio(string audioName, int audioType, float volume = 1f)
@@ -95,6 +110,20 @@ namespace Com.Krackhet.Runtime.Audio
         }
 
         protected AudioClip GetAudioClipInfo(string clipName, int clipType)
+        {
+            var audioClipInfo = _audioConfig.GetAudioClip(clipName, clipType);
+            if (audioClipInfo != null)
+            {
+                return audioClipInfo;
+            }
+            else
+            {
+                Debug.LogWarning($"Audio clip info with name {clipName} not found.");
+                return null;
+            }
+        }
+
+        protected AudioClip GetAudioClipInfo(string clipName, AudioClipType clipType)
         {
             var audioClipInfo = _audioConfig.GetAudioClip(clipName, clipType);
             if (audioClipInfo != null)
