@@ -1,14 +1,11 @@
 using System;
 using System.Collections;
 using Com.Krackhet.Runtime.Audio;
-using Com.Krackhet.Runtime.Haptic;
-using Com.Krackhet.Runtime.Haptic.Vibrate;
 using Com.Krackhet.Runtime.Managers;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
-using WA.Runtime.Haptic;
 
 namespace Com.Krackhet.Runtime.UI.Components
 {
