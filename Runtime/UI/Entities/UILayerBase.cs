@@ -29,7 +29,7 @@ namespace Com.Krackhet.Runtime.UI
         protected virtual void CacheComponents()
         {
             if (layerContent == null)
-                layerContent = layerContent.GetChild(0).GetComponent<RectTransform>();
+                layerContent = transform.GetChild(0).GetComponent<RectTransform>();
 
             if (layerContent.GetComponent<UISafeArea>() == null)
             {
