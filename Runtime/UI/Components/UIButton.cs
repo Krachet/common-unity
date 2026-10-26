@@ -8,7 +8,6 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
-using WA.Runtime.Haptic;
 
 namespace Com.Krackhet.Runtime.UI.Components
 {
@@ -272,7 +271,7 @@ namespace Com.Krackhet.Runtime.UI.Components
         {
             onClick?.Invoke();
             if (!_muteSFX) GameInternalManager.GetManager<IAudioManager>()?.PlayAudio(ButtonSfxName, 1);
-            // GameInternalManager.GetManager<IHapticManager>()?.PlayVibrate(VibrationPresetType.Button);
+            GameInternalManager.GetManager<IHapticManager>()?.PlayVibrate(VibrationPresetType.Button);
         }
         #endregion
 
