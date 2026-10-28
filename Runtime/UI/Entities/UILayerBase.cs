@@ -1,12 +1,16 @@
 using System;
 using Com.Krackhet.Runtime.UI.Utilities;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Com.Krackhet.Runtime.UI
 {
     public abstract class UILayerBase : MonoBehaviour, IUILayer
     {
         #region Serialized Fields
+        [SerializeField]
+        protected Image backgroundImg;
+
         [SerializeField]
         protected RectTransform layerContent;
 
@@ -28,8 +32,11 @@ namespace Com.Krackhet.Runtime.UI
         #region Protected Methods
         protected virtual void CacheComponents()
         {
+            if (backgroundImg == null)
+                backgroundImg = transform.GetChild(0).GetComponent<Image>();
+
             if (layerContent == null)
-                layerContent = transform.GetChild(0).GetComponent<RectTransform>();
+                layerContent = transform.GetChild(1).GetComponent<RectTransform>();
 
             if (layerContent.GetComponent<UISafeArea>() == null)
             {
@@ -72,6 +79,7 @@ namespace Com.Krackhet.Runtime.UI
             isShown = false;
             onHideCallback?.Invoke();
             layerContent.gameObject.SetActive(false);
+            backgroundImg.gameObject.SetActive(false);
         }
 
         public int GetLayerIndex() => layerIndex;
