@@ -47,6 +47,7 @@ namespace Com.Krackhet.Runtime.UI
 
         protected override void OnDestroy()
         {
+            base.OnDestroy();
             loadingCts?.Cancel();
             loadingCts?.Dispose();
             loadingCts = null;
@@ -79,7 +80,7 @@ namespace Com.Krackhet.Runtime.UI
         /// </summary>
         private async Task SmoothUpdateProgress(CancellationToken ct)
         {
-            while (!ct.IsCancellationRequested)
+            while (isLoading && !ct.IsCancellationRequested)
             {
                 if (Mathf.Abs(Process - targetProgress) < 0.001f)
                 {
@@ -107,7 +108,7 @@ namespace Com.Krackhet.Runtime.UI
             OnLoadingStart();
 
             // Start smooth progress updater
-            SmoothUpdateProgress(ct).Dispose();
+            _ = SmoothUpdateProgress(ct);
 
             // Run main tasks sequentially in order
             if (mainTasks.Count > 0)
@@ -221,7 +222,19 @@ namespace Com.Krackhet.Runtime.UI
             loadingCts?.Dispose();
             loadingCts = new CancellationTokenSource();
 
-            Loading(loaded, autoHideOnEnd, loadingCts.Token).Dispose();
+            _ = RunLoading(loaded, autoHideOnEnd, loadingCts.Token);
+        }
+
+        private async Task RunLoading(Action loaded, bool autoHideOnEnd, CancellationToken ct)
+        {
+            try
+            {
+                await Loading(loaded, autoHideOnEnd, ct);
+            }
+            catch (OperationCanceledException)
+            {
+                isLoading = false;
+            }
         }
 
         /// <summary>
