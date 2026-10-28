@@ -2,6 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+#if CYSHARP_UNITASK
+using Cysharp.Threading.Tasks;
+#endif
 using UnityEngine;
 
 namespace Com.Krackhet.Runtime.UI
@@ -122,18 +125,18 @@ namespace Com.Krackhet.Runtime.UI
                 // Run main tasks one by one in order
                 if (debugMode) Debug.Log($"[LoadingManager] Starting {mainTasks.Count} main tasks sequentially");
                 float completedWeight = 0f;
-                
+
                 foreach (var taskInfo in mainTasks)
                 {
                     if (debugMode) Debug.Log($"[LoadingManager] Starting main task: {taskInfo.DebugName}");
-                    
+
                     // Execute task and wait for it to complete
                     await ExecuteTask(taskInfo, ct);
-                    
+
                     // Update progress after each task completes
                     completedWeight += taskInfo.Weight;
                     targetProgress = Mathf.Clamp01(completedWeight / totalWeight);
-                    
+
                     if (debugMode) Debug.Log($"[LoadingManager] Task completed: {taskInfo.DebugName} - Progress: {targetProgress:P0}");
                 }
 
@@ -185,11 +188,11 @@ namespace Com.Krackhet.Runtime.UI
 
             // try
             // {
-                var progress = new Progress<float>(p => taskInfo.Progress = p);
-                await taskInfo.Task(progress, ct);
-                taskInfo.IsCompleted = true;
-                taskInfo.Progress = 1f;
-                if (debugMode) Debug.Log($"[LoadingManager] Task completed: {taskInfo.DebugName}");
+            var progress = new Progress<float>(p => taskInfo.Progress = p);
+            await taskInfo.Task(progress, ct);
+            taskInfo.IsCompleted = true;
+            taskInfo.Progress = 1f;
+            if (debugMode) Debug.Log($"[LoadingManager] Task completed: {taskInfo.DebugName}");
             // }
             // catch (Exception ex)
             // {
@@ -264,6 +267,25 @@ namespace Com.Krackhet.Runtime.UI
         {
             return AddTask((progress, ct) => task, weight, debugName);
         }
+
+
+#if CYSHARP_UNITASK
+        /// <summary>
+        /// Add a main task from a simple UniTask (no progress reporting)
+        /// </summary>
+        public virtual UILoadingBase AddTask(Func<UniTask> task, float weight = 1f, string debugName = null)
+        {
+            return AddTask((progress, ct) => task().AsTask(), weight, debugName);
+        }
+
+        /// <summary>
+        /// Add a main task from a UniTask instance
+        /// </summary>
+        public virtual UILoadingBase AddTask(UniTask task, float weight = 1f, string debugName = null)
+        {
+            return AddTask(task.AsTask(), weight, debugName);
+        }
+#endif
 
         /// <summary>
         /// Clear all pending tasks
