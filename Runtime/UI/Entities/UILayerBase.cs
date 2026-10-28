@@ -63,6 +63,7 @@ namespace Com.Krackhet.Runtime.UI
 
             isShown = true;
             layerContent.gameObject.SetActive(true);
+            backgroundImg.gameObject.SetActive(true);
         }
 
         public virtual void Show(Action onHideAction)
