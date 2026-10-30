@@ -30,7 +30,7 @@ namespace Com.Krackhet.Runtime.Audio
     [Serializable]
     public class AudioClipInfo
     {
-        public AudioClipType ClipType; // 0 for SFX, 1 for Music, etc.
+        public AudioClipType ClipType; // 0 for Music, 1 for SoundFX, etc.
         public List<AudioClip> Clips;
     }
 
