@@ -165,6 +165,15 @@ namespace Com.Krackhet.Runtime.UI
 
             return newLayer;
         }
+
+        public bool TryGetSpawnedUILayer<Layer>(out Layer layer) where Layer : UILayerBase
+        {
+            layer = null;
+            if (_uiLayers != null && _uiLayers.TryGetValue(typeof(Layer), out IUILayer existing))
+                layer = existing as Layer;
+
+            return layer != null;
+        }
         #endregion
 
         #region Private Methods
