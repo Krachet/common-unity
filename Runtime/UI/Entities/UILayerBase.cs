@@ -32,13 +32,14 @@ namespace Com.Krackhet.Runtime.UI
         #region Protected Methods
         protected virtual void CacheComponents()
         {
-            if (backgroundImg == null)
+            // Some layers have no background; backgroundImg may legitimately stay null.
+            if (backgroundImg == null && transform.childCount > 0)
                 backgroundImg = transform.GetChild(0).GetComponent<Image>();
 
-            if (layerContent == null)
+            if (layerContent == null && transform.childCount > 1)
                 layerContent = transform.GetChild(1).GetComponent<RectTransform>();
 
-            if (layerContent.GetComponent<UISafeArea>() == null)
+            if (layerContent != null && layerContent.GetComponent<UISafeArea>() == null)
             {
                 UISafeArea safeArea = layerContent.gameObject.AddComponent<UISafeArea>();
                 safeArea.adjustAnchorMax = true;
@@ -62,8 +63,10 @@ namespace Com.Krackhet.Runtime.UI
                 uiManager.AddLayer(this);
 
             isShown = true;
-            layerContent.gameObject.SetActive(true);
-            backgroundImg.gameObject.SetActive(true);
+            if (layerContent != null)
+                layerContent.gameObject.SetActive(true);
+            if (backgroundImg != null)
+                backgroundImg.gameObject.SetActive(true);
         }
 
         public virtual void Show(Action onHideAction)
@@ -79,8 +82,10 @@ namespace Com.Krackhet.Runtime.UI
 
             isShown = false;
             onHideCallback?.Invoke();
-            layerContent.gameObject.SetActive(false);
-            backgroundImg.gameObject.SetActive(false);
+            if (layerContent != null)
+                layerContent.gameObject.SetActive(false);
+            if (backgroundImg != null)
+                backgroundImg.gameObject.SetActive(false);
         }
 
         public int GetLayerIndex() => layerIndex;
