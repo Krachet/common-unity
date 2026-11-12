@@ -7,7 +7,7 @@ using Cysharp.Threading.Tasks;
 using System.Threading.Tasks;
 #endif
 
-namespace Com.Krackhet.Runtime.TimeKeeper
+namespace Com.Krackhet.Runtime.TimeKeeping
 {
     public enum Weekday
     {
