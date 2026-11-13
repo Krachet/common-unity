@@ -11,6 +11,9 @@ namespace Com.Krackhet.Runtime.Transactions
   {
     #region Public Methods
     public abstract void Pay(Action onComplete, Action onFail);
+
+    /// <summary>Ready-to-display price text (may include game-specific rich text/icon tags). Empty when there is nothing to show.</summary>
+    public abstract string GetPriceText();
     #endregion
   }
 }
