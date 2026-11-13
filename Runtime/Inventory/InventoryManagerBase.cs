@@ -5,7 +5,7 @@ using UnityEngine;
 namespace Com.Krackhet.Runtime.Inventory
 {
   /// <summary>
-  /// Scene entry point for the inventory. Builds the PlayerInventory lazily from
+  /// Scene entry point for the inventory. Builds the InventoryService lazily from
   /// the assigned catalog and the save module supplied by the game.
   /// </summary>
   public abstract class InventoryManagerBase<TSelf> : Singleton<TSelf>
@@ -26,15 +26,15 @@ namespace Com.Krackhet.Runtime.Inventory
     #region Interfaces & Properties
     public InventoryItemCatalog Catalog => _catalog;
 
-    public bool IsReady => _inventory != null;
+    public bool IsReady => _inventoryService != null;
 
     /// <summary>Created on first access, so it does not depend on Awake order.</summary>
-    public PlayerInventory Inventory
+    public InventoryService InventoryService
     {
       get
       {
-        EnsureInventory();
-        return _inventory;
+        EnsureInventoryService();
+        return _inventoryService;
       }
     }
     #endregion
@@ -48,7 +48,7 @@ namespace Com.Krackhet.Runtime.Inventory
     #endregion
 
     #region Private Fields
-    private PlayerInventory _inventory;
+    private InventoryService _inventoryService;
     #endregion
 
     #region Unity Callbacks
@@ -65,7 +65,7 @@ namespace Com.Krackhet.Runtime.Inventory
 
     protected override void OnDestroy()
     {
-      ReleaseInventory();
+      ReleaseInventoryService();
       base.OnDestroy();
     }
     #endregion
@@ -77,7 +77,7 @@ namespace Com.Krackhet.Runtime.Inventory
     /// </summary>
     public void Rebuild()
     {
-      ReleaseInventory();
+      ReleaseInventoryService();
     }
     #endregion
 
@@ -86,15 +86,15 @@ namespace Com.Krackhet.Runtime.Inventory
     protected abstract InventorySaveModule ResolveSaveModule();
 
     /// <summary>Called once right after the inventory is built (migrations, starter grants, ...).</summary>
-    protected virtual void OnInventoryCreated(PlayerInventory inventory)
+    protected virtual void OnInventoryServiceCreated(InventoryService inventoryService)
     {
     }
     #endregion
 
     #region Private Methods
-    private void EnsureInventory()
+    private void EnsureInventoryService()
     {
-      if (_inventory != null) return;
+      if (_inventoryService != null) return;
 
       if (_catalog == null)
       {
@@ -109,19 +109,19 @@ namespace Com.Krackhet.Runtime.Inventory
         return;
       }
 
-      _inventory = new PlayerInventory(_catalog, saveModule);
-      _inventory.ItemChanged += HandleItemChanged;
-      _inventory.EquippedChanged += HandleEquippedChanged;
-      OnInventoryCreated(_inventory);
+      _inventoryService = new InventoryService(_catalog, saveModule);
+      _inventoryService.ItemChanged += HandleItemChanged;
+      _inventoryService.EquippedChanged += HandleEquippedChanged;
+      OnInventoryServiceCreated(_inventoryService);
     }
 
-    private void ReleaseInventory()
+    private void ReleaseInventoryService()
     {
-      if (_inventory == null) return;
+      if (_inventoryService == null) return;
 
-      _inventory.ItemChanged -= HandleItemChanged;
-      _inventory.EquippedChanged -= HandleEquippedChanged;
-      _inventory = null;
+      _inventoryService.ItemChanged -= HandleItemChanged;
+      _inventoryService.EquippedChanged -= HandleEquippedChanged;
+      _inventoryService = null;
     }
 
     private void HandleItemChanged(InventoryItemDefinition item, int previous, int next)

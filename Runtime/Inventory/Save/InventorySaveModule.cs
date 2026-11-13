@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 namespace Com.Krackhet.Runtime.Inventory
 {
   /// <summary>
-  /// Persisted inventory state. Plain data only; rules live in PlayerInventory.
+  /// Persisted inventory state. Plain data only; rules live in InventoryService.
   /// Amounts only hold items whose amount differs from their default.
   /// </summary>
   [Serializable]

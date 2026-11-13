@@ -8,10 +8,10 @@ namespace Com.Krackhet.Runtime.Inventory
   /// Runtime rules over an InventorySaveModule: amounts, spending and equipping.
   /// Changes only touch the module in memory; the save manager persists it.
   /// </summary>
-  public class PlayerInventory
+  public class InventoryService
   {
     #region Constants
-    private const string LogTag = "[PlayerInventory]";
+    private const string LogTag = "[InventoryService]";
     #endregion
 
     #region Events & Delegates
@@ -35,7 +35,7 @@ namespace Com.Krackhet.Runtime.Inventory
     #endregion
 
     #region Public Methods
-    public PlayerInventory(InventoryItemCatalog catalog, InventorySaveModule data)
+    public InventoryService(InventoryItemCatalog catalog, InventorySaveModule data)
     {
       _catalog = catalog != null ? catalog : throw new ArgumentNullException(nameof(catalog));
       _data = data ?? throw new ArgumentNullException(nameof(data));
