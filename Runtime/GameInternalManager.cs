@@ -1,5 +1,6 @@
 using Com.Krackhet.Runtime.Audio;
 using Com.Krackhet.Runtime.Haptic;
+using Com.Krackhet.Runtime.Save;
 using Com.Krackhet.Runtime.UI;
 using UnityEngine;
 
@@ -12,6 +13,8 @@ namespace Com.Krackhet.Runtime.Managers
         public static IHapticManager HapticManager { get; private set; }
 
         public static IUIManager UIManager { get; private set; }
+
+        public static ISaveManager SaveManager { get; private set; }
 
         internal static void RegisterManager<T>(T manager) where T : class
         {
@@ -26,6 +29,9 @@ namespace Com.Krackhet.Runtime.Managers
                 case IHapticManager hapticManager:
                     HapticManager = hapticManager;
                     break;
+                case ISaveManager saveManager:
+                    SaveManager = saveManager;
+                    break;
                 default:
                     Debug.LogWarning($"Unknown manager type: {typeof(T).Name}. Registration ignored.");
                     break;
@@ -37,6 +43,7 @@ namespace Com.Krackhet.Runtime.Managers
             if (AudioManager is T audioManager) return audioManager;
             if (UIManager is T uiManager) return uiManager;
             if (HapticManager is T hapticManager) return hapticManager;
+            if (SaveManager is T saveManager) return saveManager;
             return null;
         }
     }

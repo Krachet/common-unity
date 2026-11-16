@@ -1,5 +1,4 @@
-using System;
-using System.Collections.Generic;
+using System; using System.Collections.Generic;
 using Com.Krackhet.Runtime.Pattern.Singleton;
 using Com.Krackhet.Runtime.TimeKeeping;
 using UnityEngine;
@@ -11,7 +10,7 @@ namespace Com.Krackhet.Runtime.Save
     /// Loads on Awake, saves on pause, focus loss and quit,
     /// and refreshes cycled (daily/weekly) modules on resume.
     /// </summary>
-    public abstract class SaveManagerBase<TSelf> : Singleton<TSelf> where TSelf : SaveManagerBase<TSelf>
+    public abstract class SaveManagerBase<TSelf> : Singleton<TSelf>, ISaveManager where TSelf : SaveManagerBase<TSelf>
     {
         #region Events & Delegates
         public event Action Loaded;
