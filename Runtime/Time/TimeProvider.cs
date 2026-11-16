@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace Com.Krackhet.Runtime.TimeKeeper
+namespace Com.Krackhet.Runtime.TimeKeeping
 {
     public abstract class TimeProvider : MonoBehaviour, ITimeProvider
     {

@@ -1,6 +1,6 @@
 using System;
 
-namespace Com.Krackhet.Runtime.TimeKeeper
+namespace Com.Krackhet.Runtime.TimeKeeping
 {
     public interface ITimeProvider
     {
