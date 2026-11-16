@@ -1,17 +1,24 @@
-using System; using System.Collections.Generic;
+using System;
+using System.Collections.Generic;
+using System.Threading;
 using Com.Krackhet.Runtime.Pattern.Singleton;
 using Com.Krackhet.Runtime.TimeKeeping;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace Com.Krackhet.Runtime.Save
 {
     /// <summary>
     /// Owns the save service and all registered save modules.
-    /// Loads on Awake, saves on pause, focus loss and quit,
+    /// Loads via InitializeAsync, saves on pause, focus loss and quit,
     /// and refreshes cycled (daily/weekly) modules on resume.
     /// </summary>
     public abstract class SaveManagerBase<TSelf> : Singleton<TSelf>, ISaveManager where TSelf : SaveManagerBase<TSelf>
     {
+        #region Constants
+        private const string LogTag = "[SaveManager]";
+        #endregion
+
         #region Events & Delegates
         public event Action Loaded;
         public event Action<CycledSaveModule> ModuleCycleReset;
@@ -40,17 +47,6 @@ namespace Com.Krackhet.Runtime.Save
         #endregion
 
         #region Unity Callbacks
-        protected override void Awake()
-        {
-            base.Awake();
-            if (Instance != this) return;
-
-            _service = CreateService();
-            RegisterModules();
-            IsLoaded = true;
-            Loaded?.Invoke();
-        }
-
         protected virtual void OnApplicationPause(bool isPaused)
         {
             if (isPaused)
@@ -81,9 +77,40 @@ namespace Com.Krackhet.Runtime.Save
         #endregion
 
         #region Public Methods
+        /// <summary>
+        /// Creates the save service and loads every module from RegisterModules.
+        /// Safe to call more than once; later calls return immediately.
+        /// </summary>
+        public async UniTask InitializeAsync(
+            IProgress<float> progress = null,
+            CancellationToken cancellationToken = default
+        )
+        {
+            if (IsLoaded)
+            {
+                progress?.Report(1f);
+                return;
+            }
+
+            _service = CreateService();
+            progress?.Report(0.5f);
+            await UniTask.Yield(cancellationToken);
+
+            RegisterModules();
+            IsLoaded = true;
+            progress?.Report(1f);
+            Loaded?.Invoke();
+        }
+
         public T Register<T>() where T : SaveModule, new()
         {
             if (_modules.TryGetValue(typeof(T), out SaveModule existing)) return (T)existing;
+
+            if (_service == null)
+            {
+                Debug.LogError($"{LogTag} {typeof(T).Name} requested before InitializeAsync.", this);
+                return null;
+            }
 
             T module = LoadOrCreate<T>();
             _modules.Add(typeof(T), module);
@@ -118,9 +145,15 @@ namespace Com.Krackhet.Runtime.Save
 
         public T Delete<T>() where T : SaveModule, new()
         {
+            if (_service == null)
+            {
+                Debug.LogError($"{LogTag} Cannot delete {typeof(T).Name} before InitializeAsync.", this);
+                return null;
+            }
+
             T module = new T();
-            _service?.Delete(module.Key);
-            _service?.Flush();
+            _service.Delete(module.Key);
+            _service.Flush();
             PrepareFresh(module);
             _modules[typeof(T)] = module;
             return module;
@@ -179,7 +212,10 @@ namespace Com.Krackhet.Runtime.Save
             return timeKeeper != null ? timeKeeper.Now : DateTime.Now;
         }
 
-        /// <summary>Register every module the game needs via Register&lt;T&gt;().</summary>
+        /// <summary>
+        /// Register every module the game needs via Register&lt;T&gt;().
+        /// Called once from InitializeAsync after the service is created.
+        /// </summary>
         protected abstract void RegisterModules();
         #endregion
 
