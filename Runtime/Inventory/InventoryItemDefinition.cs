@@ -6,7 +6,8 @@ namespace Com.Krackhet.Runtime.Inventory
     /// Base config for every inventory item. Concrete items add their own behaviour.
     /// Amount is the starting amount; MaxAmount of 0 means unlimited.
     /// </summary>
-    public abstract class InventoryItemDefinition : ScriptableObject
+    [CreateAssetMenu(menuName = "Krommon/Inventory/Item", fileName = "Item")]
+    public class InventoryItemDefinition : ScriptableObject
     {
         #region Interfaces & Properties
         public string Id => _id;
