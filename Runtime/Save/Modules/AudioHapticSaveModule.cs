@@ -17,6 +17,9 @@ namespace Com.Krackhet.Runtime.Save.Modules
         #region Interfaces & Properties
         [JsonIgnore]
         public override string Key => SaveKey;
+
+        [JsonIgnore]
+        protected override int CurrentDataVersion => 1;
         #endregion
 
         #region Serialized Fields

@@ -112,9 +112,22 @@ namespace Com.Krackhet.Runtime.Save
                 return null;
             }
 
-            T module = LoadOrCreate<T>();
+            T module = LoadOrCreate<T>(
+                out bool wasMigrated,
+                out bool hasUnsupportedDataVersion
+            );
             _modules.Add(typeof(T), module);
-            if (RefreshModuleCycle(module, GetCurrentTime())) SaveModuleNow(module);
+
+            bool shouldSave = wasMigrated;
+            if (!hasUnsupportedDataVersion && RefreshModuleCycle(module, GetCurrentTime()))
+            {
+                shouldSave = true;
+            }
+
+            if (shouldSave)
+            {
+                SaveModuleNow(module);
+            }
 
             return module;
         }
@@ -220,11 +233,31 @@ namespace Com.Krackhet.Runtime.Save
         #endregion
 
         #region Private Methods
-        private T LoadOrCreate<T>() where T : SaveModule, new()
+        private T LoadOrCreate<T>(
+            out bool wasMigrated,
+            out bool hasUnsupportedDataVersion
+        ) where T : SaveModule, new()
         {
+            wasMigrated = false;
+            hasUnsupportedDataVersion = false;
+
             T module = new T();
             if (_service != null && _service.TryLoad(module.Key, out T loaded))
             {
+                hasUnsupportedDataVersion = loaded.HasUnsupportedDataVersion;
+                if (hasUnsupportedDataVersion)
+                {
+                    Debug.LogWarning(
+                        $"{LogTag} Save module '{loaded.Key}' uses unsupported data version " +
+                        $"{loaded.DataVersion}. Current version is not able to load it safely.",
+                        this
+                    );
+                }
+                else
+                {
+                    wasMigrated = loaded.UpgradeDataVersion();
+                }
+
                 loaded.OnLoaded();
                 return loaded;
             }
@@ -236,6 +269,7 @@ namespace Com.Krackhet.Runtime.Save
         private void PrepareFresh(SaveModule module)
         {
             module.OnCreated();
+            module.InitializeDataVersion();
             RefreshModuleCycle(module, GetCurrentTime());
         }
 
@@ -264,6 +298,11 @@ namespace Com.Krackhet.Runtime.Save
 
         private void WriteModule(SaveModule module)
         {
+            if (module.HasUnsupportedDataVersion)
+            {
+                return;
+            }
+
             module.OnBeforeSave();
             _service.Save(module.Key, module);
         }

@@ -12,6 +12,12 @@ namespace Com.Krackhet.Runtime.Save
         #region Interfaces & Properties
         [JsonIgnore]
         public virtual string Key => GetType().Name;
+
+        [JsonProperty("dataVersion")]
+        public int DataVersion { get; private set; }
+
+        [JsonIgnore]
+        protected virtual int CurrentDataVersion => 1;
         #endregion
 
         #region Public Methods
@@ -28,6 +34,36 @@ namespace Com.Krackhet.Runtime.Save
         /// <summary>Called right before the module is written to storage.</summary>
         public virtual void OnBeforeSave()
         {
+        }
+        #endregion
+
+        #region Protected Methods
+        /// <summary>
+        /// Migrates data from the stored version to the current version.
+        /// </summary>
+        protected virtual void MigrateData(int fromVersion)
+        {
+        }
+        #endregion
+
+        #region Internal Methods
+        internal bool HasUnsupportedDataVersion => DataVersion > CurrentDataVersion;
+
+        internal bool UpgradeDataVersion()
+        {
+            if (HasUnsupportedDataVersion || DataVersion == CurrentDataVersion)
+            {
+                return false;
+            }
+
+            MigrateData(DataVersion);
+            DataVersion = CurrentDataVersion;
+            return true;
+        }
+
+        internal void InitializeDataVersion()
+        {
+            DataVersion = CurrentDataVersion;
         }
         #endregion
     }
