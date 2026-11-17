@@ -18,9 +18,6 @@ namespace Com.Krackhet.Runtime.Inventory
 
     [JsonIgnore]
     public IReadOnlyDictionary<string, int> Amounts => _amounts;
-
-    [JsonIgnore]
-    internal Dictionary<string, int> MutableAmounts => _amounts;
     #endregion
 
     #region Private Fields
