@@ -6,11 +6,11 @@ namespace Com.Krackhet.Runtime.Inventory
     /// <summary>
     /// Every item that exists in the game. Holds definitions only, never amounts.
     /// </summary>
-    [CreateAssetMenu(menuName = "Krommon/Inventory/Item Catalog", fileName = "ItemCatalog")]
-    public class InventoryItemCatalog : ScriptableObject
+    [CreateAssetMenu(menuName = "Krackhet/Inventory/Item Catalog", fileName = "ItemCatalog")]
+    public class ItemCatalog : ScriptableObject
     {
         #region Interfaces & Properties
-        public IReadOnlyList<InventoryItemDefinition> Items => _items;
+        public IReadOnlyList<ItemDefinition> Items => _items;
         #endregion
 
         #region Serialized Fields
@@ -18,14 +18,14 @@ namespace Com.Krackhet.Runtime.Inventory
         [Tooltip("All item definitions in the game.")]
 #endif
         [SerializeField]
-        private List<InventoryItemDefinition> _items = new();
+        private List<ItemDefinition> _items = new();
         #endregion
 
         #region Public Methods
         /// <summary>Returns the first item of type T, or null.</summary>
-        public T GetItem<T>() where T : InventoryItemDefinition
+        public T GetItem<T>() where T : ItemDefinition
         {
-            foreach (InventoryItemDefinition item in _items)
+            foreach (ItemDefinition item in _items)
             {
                 if (item is T match) return match;
             }
@@ -34,10 +34,10 @@ namespace Com.Krackhet.Runtime.Inventory
         }
 
         /// <summary>Returns every item of type T.</summary>
-        public List<T> GetItems<T>() where T : InventoryItemDefinition
+        public List<T> GetItems<T>() where T : ItemDefinition
         {
             var result = new List<T>();
-            foreach (InventoryItemDefinition item in _items)
+            foreach (ItemDefinition item in _items)
             {
                 if (item is T match)
                 {
