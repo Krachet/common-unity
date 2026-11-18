@@ -79,6 +79,7 @@ namespace Com.Krackhet.Runtime.Inventory
                 Inventory = CreateInventory();
                 Inventory.Initialize(_catalog);
                 Inventory.Changed += HandleInventoryChanged;
+                LoadInventory();
             }
 
             progress?.Report(1f);
@@ -161,18 +162,53 @@ namespace Com.Krackhet.Runtime.Inventory
 
         public void SaveInventory()
         {
-            throw new NotImplementedException();
+            if (!IsInitialized)
+            {
+                return;
+            }
+
+            InventorySaveModule saveModule = GetInventorySaveModule();
+            if (saveModule == null)
+            {
+                return;
+            }
+
+            foreach (InventoryItem item in Inventory.Items)
+            {
+                saveModule.SetAmount(item.Definition.ItemId, item.Amount);
+            }
         }
 
         public void LoadInventory()
         {
-            throw new NotImplementedException();
+            if (!IsInitialized)
+            {
+                return;
+            }
+
+            InventorySaveModule saveModule = GetInventorySaveModule();
+            if (saveModule == null)
+            {
+                return;
+            }
+
+            foreach (InventoryItem item in Inventory.Items)
+            {
+                if (saveModule.TryGetItem(item.Definition.ItemId, out InventoryItemSaveData saveData)
+                    && saveData != null)
+                {
+                    item.SetAmount(saveData.Amount);
+                }
+            }
         }
         #endregion
 
         #region Protected Methods
         /// <summary>Creates the game-specific inventory instance.</summary>
         protected abstract TInventory CreateInventory();
+
+        /// <summary>Returns the save module used by the game inventory.</summary>
+        protected abstract InventorySaveModule GetInventorySaveModule();
         #endregion
 
         #region Private Methods

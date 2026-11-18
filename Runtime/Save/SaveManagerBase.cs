@@ -141,6 +141,7 @@ namespace Com.Krackhet.Runtime.Save
         {
             if (!_modules.TryGetValue(typeof(T), out SaveModule module)) return;
 
+            PrepareForSave();
             SaveModuleNow(module);
         }
 
@@ -148,6 +149,7 @@ namespace Com.Krackhet.Runtime.Save
         {
             if (_service == null) return;
 
+            PrepareForSave();
             foreach (SaveModule module in _modules.Values)
             {
                 WriteModule(module);
@@ -230,6 +232,11 @@ namespace Com.Krackhet.Runtime.Save
         /// Called once from InitializeAsync after the service is created.
         /// </summary>
         protected abstract void RegisterModules();
+
+        /// <summary>Synchronizes external runtime state before modules are serialized.</summary>
+        protected virtual void PrepareForSave()
+        {
+        }
         #endregion
 
         #region Private Methods

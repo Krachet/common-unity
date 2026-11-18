@@ -23,8 +23,6 @@ public static partial class GameEvents
     public static event Action<bool> OnVibrationToggle;
     public static event Action<int> OnControlOptionChange;
 
-    public static event Action<int> OnCurrencyChanged; 
-
     public static void RaiseMusicToggle(bool enabled)
     {
         OnMusicToggle?.Invoke(enabled);
@@ -45,10 +43,6 @@ public static partial class GameEvents
         OnControlOptionChange?.Invoke(type);
     }
 
-    public static void RaiseCurrencyChanged(int amount)
-    {
-        OnCurrencyChanged?.Invoke(amount);
-    }
     #endregion
 
     #region INTERACTIONS

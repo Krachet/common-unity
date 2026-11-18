@@ -17,6 +17,8 @@ namespace Com.Krackhet.Runtime.Inventory
 
         #region Interfaces & Properties
         public bool IsInitialized { get; private set; }
+
+        public IReadOnlyList<InventoryItem> Items => _items;
         #endregion
 
         #region Private Fields
