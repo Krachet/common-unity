@@ -267,7 +267,7 @@ namespace Com.Krackhet.Runtime.UI.Components
             Press();
         }
 
-        private void Press()
+        protected virtual void Press()
         {
             onClick?.Invoke();
             if (!_muteSFX) GameInternalManager.GetManager<IAudioManager>()?.PlayAudio(ButtonSfxName, 1);
