@@ -44,6 +44,7 @@ namespace Com.Krackhet.Runtime.Inventory
             }
 
             IsInitialized = true;
+            OnInitialized();
         }
 
         public InventoryItem GetItemByDefinition(ItemDefinition definition)
@@ -171,6 +172,13 @@ namespace Com.Krackhet.Runtime.Inventory
                 out int resultAmount
             );
             return accepted && ApplyAmount(item, resultAmount);
+        }
+        #endregion
+
+        #region Protected Methods
+        /// <summary>Called after the runtime items are built, for derived state resets.</summary>
+        protected virtual void OnInitialized()
+        {
         }
         #endregion
 
