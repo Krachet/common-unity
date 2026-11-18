@@ -117,6 +117,53 @@ namespace Com.Krackhet.Runtime.Inventory
             Amount = Mathf.Max(0, amount);
         }
 
+        public void SetTrait<TValue>(string key, TValue value)
+        {
+            if (string.IsNullOrWhiteSpace(key))
+            {
+                return;
+            }
+
+            _traits ??= new Dictionary<string, JToken>();
+            _traits[key] = value is null
+                ? JValue.CreateNull()
+                : JToken.FromObject(value);
+        }
+
+        public bool TryGetTrait<TValue>(string key, out TValue value)
+        {
+            value = default;
+            if (string.IsNullOrWhiteSpace(key) || _traits == null)
+            {
+                return false;
+            }
+
+            if (!_traits.TryGetValue(key, out JToken token) ||
+                token == null ||
+                token.Type == JTokenType.Null)
+            {
+                return false;
+            }
+
+            try
+            {
+                value = token.ToObject<TValue>();
+                return true;
+            }
+            catch (JsonException)
+            {
+                return false;
+            }
+            catch (FormatException)
+            {
+                return false;
+            }
+            catch (InvalidCastException)
+            {
+                return false;
+            }
+        }
+
         public void EnsureInitialized()
         {
             _traits ??= new Dictionary<string, JToken>();

@@ -177,6 +177,8 @@ namespace Com.Krackhet.Runtime.Inventory
             {
                 saveModule.SetAmount(item.Definition.ItemId, item.Amount);
             }
+
+            OnSaveInventory(saveModule);
         }
 
         public void LoadInventory()
@@ -200,6 +202,8 @@ namespace Com.Krackhet.Runtime.Inventory
                     item.SetAmount(saveData.Amount);
                 }
             }
+
+            OnLoadInventory(saveModule);
         }
         #endregion
 
@@ -209,6 +213,16 @@ namespace Com.Krackhet.Runtime.Inventory
 
         /// <summary>Returns the save module used by the game inventory.</summary>
         protected abstract InventorySaveModule GetInventorySaveModule();
+
+        /// <summary>Saves game-specific runtime inventory state after item amounts.</summary>
+        protected virtual void OnSaveInventory(InventorySaveModule saveModule)
+        {
+        }
+
+        /// <summary>Loads game-specific runtime inventory state after item amounts.</summary>
+        protected virtual void OnLoadInventory(InventorySaveModule saveModule)
+        {
+        }
         #endregion
 
         #region Private Methods
