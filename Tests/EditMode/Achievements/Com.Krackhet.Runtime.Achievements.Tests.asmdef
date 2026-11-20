@@ -1,7 +1,0 @@
-{
-  "name": "Com.Krackhet.Runtime.Achievements.Tests",
-  "references": ["Com.Krackhet.Runtime.Achievements"],
-  "optionalUnityReferences": ["TestAssemblies"],
-  "includePlatforms": ["Editor"],
-  "autoReferenced": false
-}
