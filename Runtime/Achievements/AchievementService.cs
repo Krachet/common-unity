@@ -154,6 +154,10 @@ namespace Com.Krackhet.Runtime.Achievements
                     continue;
                 }
                 progress.Value = next;
+#if UNITY_EDITOR
+                UnityEngine.Debug.Log(
+                    $"[Achievements] {typeof(TToken).Name} -> task '{task.Id}' ({task.name}): {old} -> {next}", task);
+#endif
                 _changedTasks.Add(task);
             }
             if (_changedTasks.Count == 0) return;
