@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Com.Krackhet.Runtime.Achievements
 {
-    [CreateAssetMenu(menuName = "Krommon/Achievements/Catalog")]
+    [CreateAssetMenu(menuName = "Krackhet/Achievements/Catalog")]
     public sealed class AchievementCatalog : ScriptableObject
     {
         [SerializeField] private List<AchievementDefinition> _definitions = new List<AchievementDefinition>();
