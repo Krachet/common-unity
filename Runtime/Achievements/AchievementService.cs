@@ -21,6 +21,8 @@ namespace Com.Krackhet.Runtime.Achievements
         public string Id { get; internal set; }
         public bool Unlocked { get; internal set; }
         public DateTime? UnlockedAtUtc { get; internal set; }
+        /// <summary>Rewards were granted through <see cref="AchievementService.TryClaim"/>. Only ever true while unlocked.</summary>
+        public bool Claimed { get; internal set; }
     }
 
     public sealed class AchievementProgressNotification
@@ -51,6 +53,7 @@ namespace Com.Krackhet.Runtime.Achievements
         private readonly List<AchievementTask> _changedTasks = new List<AchievementTask>();
         private readonly List<AchievementDefinition> _affectedDefinitions = new List<AchievementDefinition>();
         private readonly HashSet<AchievementDefinition> _affectedSet = new HashSet<AchievementDefinition>();
+        private readonly HashSet<string> _claiming = new HashSet<string>();
         private bool _dispatching;
 
         /// <summary>Upper bound of queued (reentrant) dispatches drained per top-level trigger, guarding against feedback loops.</summary>
@@ -85,6 +88,7 @@ namespace Com.Krackhet.Runtime.Achievements
                     if (_states.TryGetValue(entry.Id, out var state))
                     {
                         state.Unlocked = entry.Unlocked;
+                        state.Claimed = entry.Unlocked && entry.Claimed;
                         if (DateTime.TryParse(entry.UnlockedAtUtc, null, System.Globalization.DateTimeStyles.RoundtripKind, out var time))
                             state.UnlockedAtUtc = time.ToUniversalTime();
                     }
@@ -178,18 +182,121 @@ namespace Com.Krackhet.Runtime.Achievements
 
         public void Flush() => SaveCurrentPayload();
 
-        private void SaveCurrentPayload()
+        /// <summary>
+        /// True when <paramref name="id"/> is a valid unlocked achievement with valid rewards that has not been claimed.
+        /// Does not check whether a reward context can currently grant them; <see cref="TryClaim"/> does.
+        /// </summary>
+        public bool CanClaim(string id) => ValidateClaim(id, out _, out _, out _);
+
+        /// <summary>
+        /// Claims an unlocked, unclaimed achievement: grants all of its rewards and sets a one-time claimed state, after
+        /// which repeat claims are rejected (also after reload once the state is saved). All rewards are preflighted
+        /// against <paramref name="context"/> before any is granted.
+        /// <para>Returns false when the claim was not applied: the achievement stays claimable and
+        /// <paramref name="error"/> explains why. A grant failing after a passed preflight is not rolled back.</para>
+        /// <para>Returns true when the claim was applied. <paramref name="error"/> is null only if the granted rewards
+        /// and then the claimed state were both saved; otherwise it describes the persistence failure (also raised via
+        /// <see cref="Diagnostic"/>) while the claim stays applied in memory. The two saves are separate writes, so this
+        /// is not crash-atomic: a crash between them keeps the rewards but loses the claimed state, making the
+        /// achievement claimable again after restart.</para>
+        /// </summary>
+        public bool TryClaim(string id, IAchievementRewardContext context, out string error)
+        {
+            if (!ValidateClaim(id, out var definition, out var state, out error)) return FailClaim(id, error);
+            if (context == null) return FailClaim(id, error = "No reward context.");
+            if (!_claiming.Add(id)) return FailClaim(id, error = "A claim is already in progress.");
+            try
+            {
+                foreach (var reward in definition.Rewards)
+                {
+                    bool can;
+                    try { can = reward.CanGrantTo(context, out error); }
+                    catch (Exception exception) { can = false; error = $"Reward '{reward.name}' threw during preflight: {exception.Message}"; }
+                    if (!can) return FailClaim(id, error ?? $"Reward '{reward.name}' cannot be granted.");
+                }
+                foreach (var reward in definition.Rewards)
+                {
+                    bool granted;
+                    try { granted = reward.GrantTo(context, out error); }
+                    catch (Exception exception) { granted = false; error = $"Reward '{reward.name}' threw while granting: {exception.Message}"; }
+                    // Unexpected after a passed preflight; earlier rewards may already be granted and are not rolled back.
+                    if (!granted) return FailClaim(id, error ?? $"Reward '{reward.name}' failed to grant.");
+                }
+                // Rewards are now applied in memory, so the claim is applied too: repeat claims must be rejected even if
+                // persistence below fails. Persistence failures are reported through error/Diagnostic, not rolled back.
+                state.Claimed = true;
+                string saveError;
+                bool rewardsSaved;
+                try { rewardsSaved = context.SaveGrantedRewards(out saveError); }
+                catch (Exception exception) { rewardsSaved = false; saveError = exception.Message; }
+                error = null;
+                if (!rewardsSaved)
+                    error = $"Rewards granted but saving them failed: {saveError ?? "unknown error"}.";
+                if (!SaveCurrentPayload())
+                    error = (error == null ? string.Empty : error + " ") + $"Claimed state could not be saved: {LastError}.";
+                if (error != null)
+                    RecordDiagnostic(new InvalidOperationException($"Achievement '{id}' claim applied with persistence failure: {error}"));
+                return true;
+            }
+            finally { _claiming.Remove(id); }
+        }
+
+        private bool ValidateClaim(string id, out AchievementDefinition definition, out AchievementState state, out string error)
+        {
+            state = null;
+            if (string.IsNullOrEmpty(id) || !_definitions.TryGetValue(id, out definition))
+            { definition = null; error = $"Unknown or invalid achievement '{id}'."; return false; }
+            state = _states[id];
+            if (!state.Unlocked) { error = "Achievement is not unlocked."; return false; }
+            if (state.Claimed) { error = "Achievement was already claimed."; return false; }
+            return ValidateRewards(definition, out error);
+        }
+
+        private bool ValidateRewards(AchievementDefinition definition, out string error)
+        {
+            var rewards = definition.Rewards;
+            if (rewards == null || rewards.Count == 0) { error = $"Definition '{definition.Id}' has no rewards."; return false; }
+            for (var i = 0; i < rewards.Count; i++)
+            {
+                var reward = rewards[i];
+                if (reward == null) { error = $"Definition '{definition.Id}' has a null reward."; return false; }
+                for (var j = 0; j < i; j++)
+                {
+                    if (ReferenceEquals(rewards[j], reward)) { error = $"Definition '{definition.Id}' lists reward '{reward.name}' more than once."; return false; }
+                    if (rewards[j] != null && rewards[j].GetType() == reward.GetType() && !reward.AllowMultiplePerAchievement)
+                    {
+                        error = $"Definition '{definition.Id}' has more than one {reward.GetType().Name} ('{rewards[j].name}', '{reward.name}'); combine their entries into one reward.";
+                        return false;
+                    }
+                }
+                bool valid;
+                try { valid = reward.ValidateConfiguration(out error); }
+                catch (Exception exception) { valid = false; error = exception.Message; }
+                if (!valid) { error = $"Reward '{reward.name}' ({reward.GetType().Name}) in '{definition.Id}' is misconfigured: {error ?? "validation failed"}."; return false; }
+            }
+            error = null;
+            return true;
+        }
+
+        private bool FailClaim(string id, string error)
+        {
+            RecordDiagnostic(new InvalidOperationException($"Achievement '{id}' claim failed: {error}"));
+            return false;
+        }
+
+        private bool SaveCurrentPayload()
         {
             try
             {
                 var achievements = new List<AchievementUnlockSaveEntry>(_unknownAchievements.Values);
                 foreach (var pair in _states) achievements.Add(new AchievementUnlockSaveEntry
-                    { Id = pair.Key, Unlocked = pair.Value.Unlocked, UnlockedAtUtc = pair.Value.UnlockedAtUtc?.ToString("O") });
+                    { Id = pair.Key, Unlocked = pair.Value.Unlocked, UnlockedAtUtc = pair.Value.UnlockedAtUtc?.ToString("O"), Claimed = pair.Value.Claimed });
                 var tasks = new List<AchievementTaskProgress>(_progress.Values);
                 _store.Save(new AchievementSaveData { Tasks = tasks.ToArray(), Achievements = achievements.ToArray() });
                 LastError = null;
+                return true;
             }
-            catch (Exception exception) { RecordDiagnostic(exception); }
+            catch (Exception exception) { RecordDiagnostic(exception); return false; }
         }
 
         private void Build(AchievementCatalog catalog)
@@ -229,6 +336,9 @@ namespace Com.Krackhet.Runtime.Achievements
                 foreach (var pair in pendingTasks)
                     if (!taskObjects.ContainsKey(pair.Key)) taskObjects.Add(pair.Key, pair.Value);
                 _definitions[definition.Id] = definition;
+                // Invalid rewards only block claiming; progress and unlocking still work.
+                if (definition.Rewards != null && definition.Rewards.Count > 0 && !ValidateRewards(definition, out var rewardError))
+                    Error(rewardError);
                 _states[definition.Id] = new AchievementState { Id = definition.Id };
                 foreach (var requirement in definition.Requirements)
                 {
