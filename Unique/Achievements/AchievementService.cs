@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Com.Krackhet.Runtime.Achievements
+namespace Com.Krackhet.Unique.Achievements
 {
     public interface IAchievementReporter
     {

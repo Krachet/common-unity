@@ -1,7 +1,7 @@
 using Com.Krackhet.Runtime.Inventory;
 using UnityEngine;
 
-namespace Com.Krackhet.Runtime.Achievements
+namespace Com.Krackhet.Unique.Achievements
 {
     /// <summary>
     /// Runtime services a reward may grant into. Supplied by the game when an achievement is claimed so the shared

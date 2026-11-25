@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace Com.Krackhet.Runtime.Achievements
+namespace Com.Krackhet.Unique.Achievements
 {
     public enum AchievementRequirementPolicy { All, Any }
 
