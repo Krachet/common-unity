@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Com.Krackhet.Runtime.Inventory;
 using UnityEngine;
 
-namespace Com.Krackhet.Runtime.Achievements
+namespace Com.Krackhet.Unique.Achievements
 {
     /// <summary>One item of an <see cref="InventoryItemsAchievementReward"/>: a definition and the positive amount to add.</summary>
     [Serializable]

@@ -1,6 +1,6 @@
 using System;
 
-namespace Com.Krackhet.Runtime.Achievements
+namespace Com.Krackhet.Unique.Achievements
 {
     [Serializable] public sealed class AchievementSaveData
     {

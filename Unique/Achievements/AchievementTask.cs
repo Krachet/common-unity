@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace Com.Krackhet.Runtime.Achievements
+namespace Com.Krackhet.Unique.Achievements
 {
     /// <summary>
     /// Marker for achievement event tokens. Tokens are value types describing something that happened in gameplay;

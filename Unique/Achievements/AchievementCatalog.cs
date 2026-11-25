@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Com.Krackhet.Runtime.Achievements
+namespace Com.Krackhet.Unique.Achievements
 {
     [CreateAssetMenu(menuName = "Krackhet/Achievements/Catalog")]
     public sealed class AchievementCatalog : ScriptableObject
