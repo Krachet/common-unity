@@ -1,4 +1,6 @@
+#if MOREMOUNTAINS_NICEVIBRATIONS_INSTALLED
 using Lofelt.NiceVibrations;
+#endif
 
 namespace Com.Krackhet.Runtime.Haptic.Vibrate
 {
@@ -32,6 +34,6 @@ namespace Com.Krackhet.Runtime.Haptic.Vibrate
                     return HapticPatterns.PresetType.None;
             }
         }
-#endif
     }
+#endif
 }
