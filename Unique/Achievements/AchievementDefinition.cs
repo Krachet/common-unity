@@ -10,7 +10,10 @@ namespace Com.Krackhet.Unique.Achievements
         [SerializeField] private AchievementRequirementPolicy _policy;
         [SerializeField] private List<AchievementRequirement> _requirements = new List<AchievementRequirement>();
         [SerializeField] private List<AchievementReward> _rewards = new List<AchievementReward>();
+        [Tooltip("Optional display icon. Null keeps the UI's default icon.")]
+        [SerializeField] private Sprite _icon;
         public string Id => _id;
+        public Sprite Icon => _icon;
         public AchievementRequirementPolicy Policy => _policy;
         public IReadOnlyList<AchievementRequirement> Requirements => _requirements;
         public IReadOnlyList<AchievementReward> Rewards => _rewards;
