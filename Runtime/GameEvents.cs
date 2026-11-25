@@ -1,6 +1,6 @@
 using System;
 
-public static partial class GameEvents
+public static class BaseGameEvents
 {
     #region TIME
     public static event Action OnNewDay;
